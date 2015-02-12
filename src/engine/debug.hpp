@@ -6,6 +6,7 @@
 
 #define DEB engine::Debug::log("DEBUG: " + std::string(__FILE__) + " " + __FUNCTION__ + " " + std::to_string(__LINE__));
 #define LOG(...) engine::Debug::log(__VA_ARGS__)
+#define LOG_WARNING(...) engine::Debug::logWarning(__VA_ARGS__)
 #define LOG_ERROR(...) engine::Debug::logError(__VA_ARGS__)
 
 namespace engine {
@@ -35,14 +36,26 @@ class Debug {
 		}
 
 		template<typename T>
+		static void logWarning(const T & output) {
+			std::cout << "WARNING: ";
+			log(output);
+		}
+
+		template <typename T, typename ... Args>
+		static void logWarning(const T & output, Args ... args) {
+			logWarning(output);
+			logWarning(args ...);
+		}
+
+		template<typename T>
 		static void log(const T & output) {
 			std::cout << output << std::endl;
 		}
 
 		template <typename T, typename ... Args>
 		static void log(const T & output, Args ... args) {
-		    log(output);
-		    log(args ...);
+			log(output);
+			log(args ...);
 		}
 
 		static void log(const glm::vec3 & vec) {

@@ -22,8 +22,15 @@ class VertexArray {
 
 		void bind() const;
 
+		bool attribBindingEnabled(unsigned int) const;
+		void enableAttribBinding(unsigned int) const;
+
+		// TO DO: auslagern
 		void bindElementBuffer(GLuint) const;
-		void bindVertexBuffer(GLuint, unsigned int, unsigned int, unsigned int) const;
+		void bindVertexBuffer(GLuint, unsigned int, unsigned int,
+				unsigned int, unsigned int) const;
+
+		void bindVertexFormat(unsigned int, unsigned int, GLenum, bool, unsigned int) const;
 
 	private:
 

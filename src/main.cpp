@@ -209,7 +209,8 @@ void basicDrawDemo(engine::Engine & e) {
     // vao
     gl::VertexArray vao("Basic Draw VAO");
     glBindVertexArray(vao);
-    vao.bindVertexBuffer(vbo, 0, 0, 3 * sizeof(float));
+    vao.bindVertexBuffer(vbo, 0, 0, 3 * sizeof(float), 0);
+    vao.bindVertexFormat(0, 3, GL_FLOAT, GL_FALSE, 0);
     prog.use();
     while (e.render()) {
         glDrawArrays(GL_TRIANGLES, 0, 3);
