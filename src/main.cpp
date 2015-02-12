@@ -1,12 +1,16 @@
 #include <cstdlib>
 #include <vector>
 #include <algorithm>
+#include <deque>
 
 #include "engine/engine.hpp"
 #include "engine/gl/shader.hpp"
 #include "engine/gl/program.hpp"
 #include "engine/gl/buffer.hpp"
 #include "engine/gl/vertexarray.hpp"
+#include "engine/gl/timer.hpp"
+
+constexpr auto NUM_TRIANGLES = 400u;
 
 void vertexPullingDemo() {
 
@@ -166,70 +170,218 @@ void vertexPullingDemo() {
 
 }
 
-void instancingDemo() {
+std::vector<GLfloat> createVertexPositionData(unsigned int num) {
+
+    std::vector<GLfloat> vec;
+    vec.reserve(num * num * 6);
+
+    const auto stepSize = 2.f / static_cast<float>(num);
+    for (auto i = -1.f; i < 1.f; i += stepSize) {
+        for (auto j = -1.f; j < 1.f; j += stepSize) {
+            vec.emplace_back(i);
+            vec.emplace_back(j);
+            vec.emplace_back(i + stepSize);
+            vec.emplace_back(j);
+            vec.emplace_back(i + stepSize / 2.f);
+            vec.emplace_back(j + stepSize);
+        }
+    }
+
+    return vec;
+
+}
+
+auto getAverageMs(const std::deque<GLuint64> & deque) {
+    auto avg = 0.0;
+    for (const auto & t : deque) {
+        avg += static_cast<long double>(t) * 0.000001;
+    }
+    avg /= deque.size();
+    return avg;
+}
+
+void instancingDemo(engine::Engine & /*e*/) {
 
     // shader
     gl::Shader vert("shader/test/instancedraw.vert", "instance_vert");
-    gl::Shader frag("shader/test/red.frag", "red_frag");
-    gl::Program prog("basic prog");
+    gl::Shader frag("shader/test/color.frag", "color_frag");
+    gl::Program prog("instance prog");
     prog.attachShader(vert);
     prog.attachShader(frag);
 
 }
 
-void multidrawDemo() {
+void multidrawDemo(engine::Engine & e) {
 
     // shader
     gl::Shader vert("shader/test/multidraw.vert", "multi_vert");
-    gl::Shader frag("shader/test/red.frag", "red_frag");
-    gl::Program prog("basic prog");
+    gl::Shader frag("shader/test/color.frag", "color_frag");
+    gl::Program prog("multi prog");
     prog.attachShader(vert);
     prog.attachShader(frag);
 
+    // vbo
+    std::vector<GLfloat> triPos {
+        -1.f, -1.f,
+        0.f, -1.f,
+        -0.5f, 0.f,
+
+        0.f, -1.f,
+        1.f, -1.f,
+        0.5f, 0.f
+    };
+    std::vector<GLfloat> triCol {
+        1.f, 0.f,
+        1.f, 0.f,
+        1.f, 0.f,
+
+        0.f, 1.f,
+        0.f, 1.f,
+        0.f, 1.f
+    };
+    gl::Buffer vboPos("Multi Draw Pos VBO");
+    vboPos.createStorage(static_cast<unsigned int>(triPos.size()) * sizeof(float), 0, triPos.data());
+    gl::Buffer vboCol("Multi Draw Pos VBO");
+    vboCol.createStorage(static_cast<unsigned int>(triCol.size()) * sizeof(float), 0, triCol.data());
+
+    std::vector<GLint> first {
+        0, 3
+    };
+    std::vector<GLsizei> count {
+        3, 3
+    };
+
+    // vao
+    gl::VertexArray vao("Basic Draw VAO");
+    glBindVertexArray(vao);
+    vao.enableAttribBinding(0);
+    vao.bindVertexBuffer(vboPos, 0, 0, 2 * sizeof(float), 0);
+    vao.bindVertexFormat(0, 2, GL_FLOAT, GL_FALSE, 0);
+    vao.enableAttribBinding(1);
+    vao.bindVertexBuffer(vboCol, 1, 0, 2 * sizeof(float), 0);
+    vao.bindVertexFormat(1, 2, GL_FLOAT, GL_FALSE, 0);
+
+    prog.use();
+    while (e.render()) {
+        glMultiDrawArrays(GL_TRIANGLES, first.data(), count.data(), 2);
+    }
+
 }
 
-void basicDrawDemo(engine::Engine & e) {
+void baseIndexDemo(engine::Engine & e) {
+
+    gl::Timer timer;
+    std::deque<GLuint64> timeDeque;
 
     // shader
     gl::Shader vert("shader/test/basicdraw.vert", "basic_vert");
-    gl::Shader frag("shader/test/red.frag", "red_frag");
+    gl::Shader frag("shader/test/color.frag", "color_frag");
     gl::Program prog("basic prog");
     prog.attachShader(vert);
     prog.attachShader(frag);
 
     // vbo
-    std::vector<GLfloat> tri {
-        -1.f, -1.f, 0.f,
-        1.f, -1.f, 0.f,
-        0.f, 1.f, 0.f
-    };
+    auto tri = createVertexPositionData(NUM_TRIANGLES);
     gl::Buffer vbo("Basic Draw VBO");
-    vbo.createStorage(9 * sizeof(float), 0, tri.data());
+    vbo.createStorage(static_cast<unsigned int>(tri.size()) * sizeof(float), 0, tri.data());
+
+    // ibo
+    std::vector<GLushort> idx;
+    idx.reserve(NUM_TRIANGLES * NUM_TRIANGLES * 3);
+    for (auto i = 0u; i < NUM_TRIANGLES; ++i) {
+        for (auto j = 0u; j < NUM_TRIANGLES; ++j) {
+            idx.emplace_back(0);
+            idx.emplace_back(1);
+            idx.emplace_back(2);
+        }
+    }
+    gl::Buffer ibo("Basic Draw IBO");
+    ibo.createStorage(static_cast<unsigned int>(idx.size()) * sizeof(GLshort), 0, idx.data());
 
     // vao
     gl::VertexArray vao("Basic Draw VAO");
     glBindVertexArray(vao);
-    vao.bindVertexBuffer(vbo, 0, 0, 3 * sizeof(float), 0);
-    vao.bindVertexFormat(0, 3, GL_FLOAT, GL_FALSE, 0);
+    vao.enableAttribBinding(0);
+    vao.bindVertexBuffer(vbo, 0, 0, 2 * sizeof(float), 0);
+    vao.bindVertexFormat(0, 2, GL_FLOAT, GL_FALSE, 0);
+    vao.bindElementBuffer(ibo);
+
     prog.use();
+    prog["col"] = glm::vec3{1.f, 0.f, 0.f};
     while (e.render()) {
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        timer.start();
+
+        for (auto i = 0u; i < NUM_TRIANGLES * NUM_TRIANGLES; ++i) {
+            glDrawElementsBaseVertex(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, 0, static_cast<GLint>(i) * 3);
+        }
+
+        timeDeque.emplace_back(timer.stop());
+        if (timeDeque.size() == 100) {
+            const auto ms = getAverageMs(timeDeque);
+            timeDeque.erase(timeDeque.begin(), timeDeque.begin() + 50);
+            LOG("Time: " + std::to_string(ms) + " ms");
+        }
     }
+
+}
+
+void basicDrawDemo(engine::Engine & e) {
+
+    gl::Timer timer;
+    std::deque<GLuint64> timeDeque;
+
+    // shader
+    gl::Shader vert("shader/test/basicdraw.vert", "basic_vert");
+    gl::Shader frag("shader/test/color.frag", "color_frag");
+    gl::Program prog("basic prog");
+    prog.attachShader(vert);
+    prog.attachShader(frag);
+
+    // vbo
+    auto tri = createVertexPositionData(NUM_TRIANGLES);
+    gl::Buffer vbo("Basic Draw VBO");
+    vbo.createStorage(static_cast<unsigned int>(tri.size()) * sizeof(float), 0, tri.data());
+
+    // vao
+    gl::VertexArray vao("Basic Draw VAO");
+    glBindVertexArray(vao);
+    vao.enableAttribBinding(0);
+    vao.bindVertexBuffer(vbo, 0, 0, 2 * sizeof(float), 0);
+    vao.bindVertexFormat(0, 2, GL_FLOAT, GL_FALSE, 0);
+
+    prog.use();
+    prog["col"] = glm::vec3{1.f, 0.f, 0.f};
+    while (e.render()) {
+        timer.start();
+
+        for (auto i = 0u; i < NUM_TRIANGLES * NUM_TRIANGLES; ++i) {
+            glDrawArrays(GL_TRIANGLES, static_cast<GLint>(i) * 3, 3);
+        }
+
+        timeDeque.emplace_back(timer.stop());
+        if (timeDeque.size() == 100) {
+            const auto ms = getAverageMs(timeDeque);
+            timeDeque.erase(timeDeque.begin(), timeDeque.begin() + 50);
+            LOG("Time: " + std::to_string(ms) + " ms");
+        }
+    }
+
 }
 
 int main() {
 
 	const std::string title("monoEngine");
-	const auto width = 1280u;
-	const auto height = 720u;
+	const auto width = 1920u;
+	const auto height = 1080u;
 	engine::Engine e(width, height, title, true);
 
 	// DEMO
 	// auto time = glfwGetTime();
 
     // vertexPullingDemo();
-    // instancingDemo();
-    // multidrawDemo();
+    // instancingDemo(e);
+    // multidrawDemo(e);
+    // baseIndexDemo(e);
     basicDrawDemo(e);
 
 	// LOG("time: " + std::to_string(glfwGetTime() - time) + "s");

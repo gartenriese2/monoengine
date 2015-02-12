@@ -21,8 +21,8 @@ class Program {
 		Program & operator=(Program &&) = default;
 		~Program() {}
 
- 		operator GLuint() const { return m_obj; }
- 		auto operator[](const std::string &) const;
+ 		//operator GLuint() const { return m_obj; }
+ 		Uniform operator[](const std::string &) const;
 
 		void attachShader(const Shader &) const;
 		void use();

@@ -52,6 +52,10 @@ GLObject::GLObject(const GLenum type)
 			glCreateTextures(type, 1, &m_handle);
 			m_deleter = [](GLuint & handle){ glDeleteTextures(1, &handle); };
 			break;
+		case GL_TIME_ELAPSED:
+			glCreateQueries(type, 1, &m_handle);
+			m_deleter = [](GLuint & handle){ glDeleteQueries(1, &handle); };
+			break;
 		default:
 			LOG("Unimplemented GLenum!");
 	}

@@ -26,7 +26,7 @@ Program::Program(const std::string & name)
 	}
 }
 
-auto Program::operator[](const std::string & name) const {
+Uniform Program::operator[](const std::string & name) const {
 
 	auto it = m_uniforms.find(name);
 	if (it != m_uniforms.end()) {

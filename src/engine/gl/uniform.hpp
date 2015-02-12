@@ -9,44 +9,44 @@ namespace gl {
 
 class Uniform {
 
- 	public:
+	public:
 
- 		/*
- 		 *	single values
- 		 */
+		/*
+		 *	single values
+		 */
 
- 		// bool
- 		void operator=(const bool val) {
-		    if (m_loc != -1) {
-			    glUniform1i(m_loc, val);
+		// bool
+		void operator=(const bool val) {
+			if (m_loc != -1) {
+				glUniform1i(m_loc, val);
 			}
 		}
 
 		// int
- 		void operator=(const int val) {
-		    if (m_loc != -1) {
-			    glUniform1i(m_loc, val);
+		void operator=(const int val) {
+			if (m_loc != -1) {
+				glUniform1i(m_loc, val);
 			}
 		}
 
 		// unsigned int
 		void operator=(const unsigned int val) {
-		    if (m_loc != -1) {
-			    glUniform1ui(m_loc, val);
+			if (m_loc != -1) {
+				glUniform1ui(m_loc, val);
 			}
 		}
 
 		// float
- 		void operator=(const float val) {
-		    if (m_loc != -1) {
-			    glUniform1f(m_loc, val);
+		void operator=(const float val) {
+			if (m_loc != -1) {
+				glUniform1f(m_loc, val);
 			}
 		}
 
 		// double
 		void operator=(const double val) {
-		    if (m_loc != -1) {
-			    glUniform1d(m_loc, val);
+			if (m_loc != -1) {
+				glUniform1d(m_loc, val);
 			}
 		}
 
@@ -237,12 +237,12 @@ class Uniform {
 			}
 		}
 
- 	private:
+	private:
 
- 		friend class Program;
-    	explicit Uniform(GLint loc) : m_loc{loc} {}
+		friend class Program;
+		explicit Uniform(GLint loc) : m_loc{loc} {}
 
-    	GLint m_loc;
+		GLint m_loc;
 
 };
 
