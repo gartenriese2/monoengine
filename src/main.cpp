@@ -10,7 +10,9 @@
 #include "engine/gl/vertexarray.hpp"
 #include "engine/gl/timer.hpp"
 
-constexpr auto NUM_TRIANGLES = 1u;
+#include "engine/core/camera.hpp"
+
+constexpr auto NUM_TRIANGLES = 10u;
 
 void vertexPullingDemo() {
 
@@ -170,7 +172,7 @@ void vertexPullingDemo() {
 
 }
 
-std::vector<GLfloat> createVertexPositionData(unsigned int num) {
+std::vector<GLfloat> createVertexPositionDataTriangle(unsigned int num) {
 
 	std::vector<GLfloat> vec;
 	vec.reserve(num * num * 6);
@@ -185,6 +187,180 @@ std::vector<GLfloat> createVertexPositionData(unsigned int num) {
 			vec.emplace_back(i + stepSize / 2.f);
 			vec.emplace_back(j + stepSize);
 		}
+	}
+
+	return vec;
+
+}
+
+std::vector<GLfloat> createVertexPositionDataCubeForArrays(unsigned int num) {
+
+	std::vector<GLfloat> vec;
+	vec.reserve(num * num * 108);
+
+	auto empl = [&vec](const glm::vec3 v){
+		vec.emplace_back(v.x);
+		vec.emplace_back(v.y);
+		vec.emplace_back(v.z);
+	};
+
+	const auto stepSize = 2.f / static_cast<float>(num);
+	const auto delta = stepSize / 4.f;
+	for (auto i = -1.f; i < 1.f; i += stepSize) {
+		for (auto j = -1.f; j < 1.f; j += stepSize) {
+			std::vector<glm::vec3> vertices;
+			vertices.emplace_back(i + delta, j + delta, stepSize / 2.f - delta);
+			vertices.emplace_back(i + stepSize - delta, j + delta, stepSize / 2.f - delta);
+			vertices.emplace_back(i + stepSize - delta, j + stepSize - delta, stepSize / 2.f - delta);
+			vertices.emplace_back(i + delta, j + stepSize - delta, stepSize / 2.f - delta);
+			vertices.emplace_back(vertices[0] - glm::vec3{0.f, 0.f, stepSize + 2.f * delta});
+			vertices.emplace_back(vertices[1] - glm::vec3{0.f, 0.f, stepSize + 2.f * delta});
+			vertices.emplace_back(vertices[2] - glm::vec3{0.f, 0.f, stepSize + 2.f * delta});
+			vertices.emplace_back(vertices[3] - glm::vec3{0.f, 0.f, stepSize + 2.f * delta});
+
+			empl(vertices[0]);
+			empl(vertices[1]);
+			empl(vertices[2]);
+			empl(vertices[0]);
+			empl(vertices[2]);
+			empl(vertices[3]);
+
+			empl(vertices[4]);
+			empl(vertices[0]);
+			empl(vertices[3]);
+			empl(vertices[4]);
+			empl(vertices[3]);
+			empl(vertices[7]);
+
+			empl(vertices[5]);
+			empl(vertices[4]);
+			empl(vertices[7]);
+			empl(vertices[5]);
+			empl(vertices[7]);
+			empl(vertices[6]);
+
+			empl(vertices[1]);
+			empl(vertices[5]);
+			empl(vertices[6]);
+			empl(vertices[1]);
+			empl(vertices[6]);
+			empl(vertices[2]);
+
+			empl(vertices[3]);
+			empl(vertices[2]);
+			empl(vertices[6]);
+			empl(vertices[3]);
+			empl(vertices[6]);
+			empl(vertices[7]);
+
+			empl(vertices[4]);
+			empl(vertices[5]);
+			empl(vertices[1]);
+			empl(vertices[4]);
+			empl(vertices[1]);
+			empl(vertices[0]);
+
+		}
+	}
+
+	return vec;
+
+}
+
+std::vector<GLfloat> createVertexPositionDataCube(unsigned int num) {
+
+	std::vector<GLfloat> vec;
+	vec.reserve(num * num * 24);
+
+	const auto stepSize = 2.f / static_cast<float>(num);
+	const auto delta = stepSize / 4.f;
+	for (auto i = -1.f; i < 1.f; i += stepSize) {
+		for (auto j = -1.f; j < 1.f; j += stepSize) {
+			vec.emplace_back(i + delta);
+			vec.emplace_back(j + delta);
+			vec.emplace_back(stepSize - delta);
+
+			vec.emplace_back(i + stepSize - delta);
+			vec.emplace_back(j + delta);
+			vec.emplace_back(stepSize - delta);
+
+			vec.emplace_back(i + stepSize - delta);
+			vec.emplace_back(j + stepSize - delta);
+			vec.emplace_back(stepSize - delta);
+
+			vec.emplace_back(i + delta);
+			vec.emplace_back(j + stepSize - delta);
+			vec.emplace_back(stepSize - delta);
+
+			vec.emplace_back(i + delta);
+			vec.emplace_back(j + delta);
+			vec.emplace_back(delta - stepSize);
+
+			vec.emplace_back(i + stepSize - delta);
+			vec.emplace_back(j + delta);
+			vec.emplace_back(delta - stepSize);
+
+			vec.emplace_back(i + stepSize - delta);
+			vec.emplace_back(j + stepSize - delta);
+			vec.emplace_back(delta - stepSize);
+
+			vec.emplace_back(i + delta);
+			vec.emplace_back(j + stepSize - delta);
+			vec.emplace_back(delta - stepSize);
+		}
+	}
+
+	return vec;
+
+}
+
+std::vector<GLushort> createVertexIndexDataCube(unsigned int num) {
+
+	std::vector<GLushort> vec;
+	vec.reserve(num * num * 36);
+
+	for (auto i = 0u; i < num * num; ++i) {
+		vec.emplace_back(0);
+		vec.emplace_back(1);
+		vec.emplace_back(2);
+		vec.emplace_back(0);
+		vec.emplace_back(2);
+		vec.emplace_back(3);
+
+		vec.emplace_back(4);
+		vec.emplace_back(0);
+		vec.emplace_back(3);
+		vec.emplace_back(4);
+		vec.emplace_back(3);
+		vec.emplace_back(7);
+
+		vec.emplace_back(5);
+		vec.emplace_back(4);
+		vec.emplace_back(7);
+		vec.emplace_back(5);
+		vec.emplace_back(7);
+		vec.emplace_back(6);
+
+		vec.emplace_back(1);
+		vec.emplace_back(5);
+		vec.emplace_back(6);
+		vec.emplace_back(1);
+		vec.emplace_back(6);
+		vec.emplace_back(2);
+
+		vec.emplace_back(3);
+		vec.emplace_back(2);
+		vec.emplace_back(6);
+		vec.emplace_back(3);
+		vec.emplace_back(6);
+		vec.emplace_back(7);
+
+		vec.emplace_back(4);
+		vec.emplace_back(5);
+		vec.emplace_back(1);
+		vec.emplace_back(4);
+		vec.emplace_back(1);
+		vec.emplace_back(0);
 	}
 
 	return vec;
@@ -318,18 +494,20 @@ void multidrawElementDemo(engine::Engine & e) {
 	prog.attachShader(frag);
 
 	// vbo
-	const auto tri = createVertexPositionData(NUM_TRIANGLES);
+	// const auto tri = createVertexPositionDataTriangle(NUM_TRIANGLES);
+	const auto tri = createVertexPositionDataCube(NUM_TRIANGLES);
 	gl::Buffer vbo("Multi Draw VBO");
 	vbo.createStorage(static_cast<unsigned int>(tri.size()) * sizeof(float), 0, tri.data());
 
 	// ibo
-	std::vector<GLuint> idx;
-	idx.reserve(primcount * 3);
-	for (auto i = 0u; i < primcount; ++i) {
-		idx.emplace_back(0);
-		idx.emplace_back(1);
-		idx.emplace_back(2);
-	}
+	// std::vector<GLuint> idx;
+	// idx.reserve(primcount * 3);
+	// for (auto i = 0u; i < primcount; ++i) {
+	// 	idx.emplace_back(0);
+	// 	idx.emplace_back(1);
+	// 	idx.emplace_back(2);
+	// }
+	const auto idx = createVertexIndexDataCube(NUM_TRIANGLES);
 	gl::Buffer ibo("Multi Draw IBO");
 	ibo.createStorage(static_cast<unsigned int>(idx.size()) * sizeof(GLuint), 0, idx.data());
 
@@ -385,7 +563,7 @@ void multidrawDemo(engine::Engine & e) {
 	prog.attachShader(frag);
 
 	// vbo
-	auto tri = createVertexPositionData(NUM_TRIANGLES);
+	auto tri = createVertexPositionDataTriangle(NUM_TRIANGLES);
 	gl::Buffer vbo("Multi Draw Pos VBO");
 	vbo.createStorage(static_cast<unsigned int>(tri.size()) * sizeof(float), 0, tri.data());
 
@@ -423,7 +601,7 @@ void multidrawDemo(engine::Engine & e) {
 
 }
 
-void baseIndexDemo(engine::Engine & e) {
+void baseIndexDemo(engine::Engine & e, core::Camera & cam) {
 
 	gl::Timer timer;
 	std::deque<GLuint64> timeDeque;
@@ -436,38 +614,45 @@ void baseIndexDemo(engine::Engine & e) {
 	prog.attachShader(frag);
 
 	// vbo
-	auto tri = createVertexPositionData(NUM_TRIANGLES);
+	// const auto tri = createVertexPositionDataTriangle(NUM_TRIANGLES);
+	const auto tri = createVertexPositionDataCube(NUM_TRIANGLES);
 	gl::Buffer vbo("Basic Draw VBO");
-	vbo.createStorage(static_cast<unsigned int>(tri.size()) * sizeof(float), 0, tri.data());
+	vbo.createStorage(static_cast<unsigned int>(tri.size()) * sizeof(GLfloat), 0, tri.data());
 
 	// ibo
-	std::vector<GLushort> idx;
-	idx.reserve(NUM_TRIANGLES * NUM_TRIANGLES * 3);
-	for (auto i = 0u; i < NUM_TRIANGLES; ++i) {
-		for (auto j = 0u; j < NUM_TRIANGLES; ++j) {
-			idx.emplace_back(0);
-			idx.emplace_back(1);
-			idx.emplace_back(2);
-		}
-	}
+	// std::vector<GLushort> idx;
+	// idx.reserve(NUM_TRIANGLES * NUM_TRIANGLES * 3);
+	// for (auto i = 0u; i < NUM_TRIANGLES; ++i) {
+	// 	for (auto j = 0u; j < NUM_TRIANGLES; ++j) {
+	// 		idx.emplace_back(0);
+	// 		idx.emplace_back(1);
+	// 		idx.emplace_back(2);
+	// 	}
+	// }
+	const auto idx = createVertexIndexDataCube(NUM_TRIANGLES);
 	gl::Buffer ibo("Basic Draw IBO");
-	ibo.createStorage(static_cast<unsigned int>(idx.size()) * sizeof(GLshort), 0, idx.data());
+	ibo.createStorage(static_cast<unsigned int>(idx.size()) * sizeof(GLushort), 0, idx.data());
 
 	// vao
 	gl::VertexArray vao("Basic Draw VAO");
 	glBindVertexArray(vao);
 	vao.enableAttribBinding(0);
-	vao.bindVertexBuffer(vbo, 0, 0, 2 * sizeof(float), 0);
-	vao.bindVertexFormat(0, 2, GL_FLOAT, GL_FALSE, 0);
+	vao.bindVertexBuffer(vbo, 0, 0, 3 * sizeof(float), 0);
+	vao.bindVertexFormat(0, 3, GL_FLOAT, GL_FALSE, 0);
 	vao.bindElementBuffer(ibo);
 
 	prog.use();
 	prog["col"] = glm::vec3{1.f, 0.f, 0.f};
 	while (e.render()) {
+
+		glClear(GL_COLOR_BUFFER_BIT);
+		prog["MVP"] = cam.getProjMatrix() * cam.getViewMatrix();
+
 		timer.start();
 
 		for (auto i = 0u; i < NUM_TRIANGLES * NUM_TRIANGLES; ++i) {
-			glDrawElementsBaseVertex(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, 0, static_cast<GLint>(i) * 3);
+			// glDrawElementsBaseVertex(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, 0, static_cast<GLint>(i) * 3);
+			glDrawElementsBaseVertex(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0, static_cast<GLint>(i) * 8);
 		}
 
 		timeDeque.emplace_back(timer.stop());
@@ -476,69 +661,40 @@ void baseIndexDemo(engine::Engine & e) {
 			timeDeque.erase(timeDeque.begin(), timeDeque.begin() + 50);
 			LOG("Time: " + std::to_string(ms) + " ms");
 		}
+
+		// cam.translateLocal({0.1f, 0.f, 0.f});
+		// cam.yaw(glm::radians(1.f));
 	}
 
 }
 
-void basicDrawDemo(engine::Engine & e) {
-
-	gl::Timer timer;
-	std::deque<GLuint64> timeDeque;
-
-	// shader
-	gl::Shader vert("shader/test/basicdraw.vert", "basic_vert");
-	gl::Shader frag("shader/test/color.frag", "color_frag");
-	gl::Program prog("basic prog");
-	prog.attachShader(vert);
-	prog.attachShader(frag);
-
-	// vbo
-	auto tri = createVertexPositionData(NUM_TRIANGLES);
-	gl::Buffer vbo("Basic Draw VBO");
-	vbo.createStorage(static_cast<unsigned int>(tri.size()) * sizeof(float), 0, tri.data());
-
-	// vao
-	gl::VertexArray vao("Basic Draw VAO");
-	glBindVertexArray(vao);
-	vao.enableAttribBinding(0);
-	vao.bindVertexBuffer(vbo, 0, 0, 2 * sizeof(float), 0);
-	vao.bindVertexFormat(0, 2, GL_FLOAT, GL_FALSE, 0);
-
-	prog.use();
-	prog["col"] = glm::vec3{1.f, 0.f, 0.f};
-	while (e.render()) {
-		timer.start();
-
-		for (auto i = 0u; i < NUM_TRIANGLES * NUM_TRIANGLES; ++i) {
-			glDrawArrays(GL_TRIANGLES, static_cast<GLint>(i) * 3, 3);
-		}
-
-		timeDeque.emplace_back(timer.stop());
-		if (timeDeque.size() == 100) {
-			const auto ms = getAverageMs(timeDeque);
-			timeDeque.erase(timeDeque.begin(), timeDeque.begin() + 50);
-			LOG("Time: " + std::to_string(ms) + " ms");
-		}
-	}
-
-}
+#include "demo.hpp"
 
 int main() {
 
-	const std::string title("monoEngine");
+	// const std::string title("monoEngine");
 	const auto width = 1920u;
 	const auto height = 1080u;
-	engine::Engine e(width, height, title, true);
+	// engine::Engine e(width, height, title, true);
 
-	// DEMO
+	// // DEMO
 
-	// vertexPullingDemo();
-	// instancingElementDemo(e);
-	instancingDemo(e);
-	// multidrawElementDemo(e);
-	// multidrawDemo(e);
-	// baseIndexDemo(e);
-	// basicDrawDemo(e);
+	// core::Camera cam;
+	// cam.setRatio(static_cast<float>(width) / static_cast<float>(height));
+	// cam.setFov(glm::radians(45.f));
+	// cam.translate({0.f, 0.f, 5.f});
+
+	// // vertexPullingDemo();
+	// // instancingElementDemo(e);
+	// // instancingDemo(e);
+	// // multidrawElementDemo(e);
+	// // multidrawDemo(e);
+	// baseIndexDemo(e, cam);
+	// // basicDrawDemo(e, cam);
+
+	Demo demo(width, height);
+	demo.use(Demo::RenderType::BASICINDEX);
+	while (!demo.shouldClose()) demo.render();
 
 	return EXIT_SUCCESS;
 
