@@ -15,7 +15,11 @@ class Demo {
 
 	public:
 
-		enum class RenderType : std::int8_t { BASIC, BASICINDEX };
+		enum class RenderType : std::int8_t {
+				BASIC_TRIANGLE, BASIC_CUBE,
+				BASICINDEX_TRIANGLE, BASICINDEX_CUBE,
+				MULTI_TRIANGLE, MULTI_CUBE
+		};
 
 		Demo(unsigned int, unsigned int);
 
@@ -40,11 +44,17 @@ class Demo {
 
 		gl::Buffer m_vboTriangle;
 		gl::Buffer m_vboCube;
+		gl::Buffer m_vboCubeIndexed;
 		gl::Buffer m_iboTriangle;
 		gl::Buffer m_iboCube;
+		std::vector<GLint> m_multiOffsets;
+		std::vector<GLsizei> m_multiCounts;
+		std::vector<GLint> m_multiOffsetsCube;
+		std::vector<GLsizei> m_multiCountsCube;
 
 		gl::VertexArray m_vaoTriangle;
 		gl::VertexArray m_vaoTriangleIndex;
+		gl::VertexArray m_vaoCube;
 		gl::VertexArray m_vaoCubeIndex;
 
 		gl::Timer m_timer;

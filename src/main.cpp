@@ -550,124 +550,6 @@ void multidrawElementDemo(engine::Engine & e) {
 
 }
 
-void multidrawDemo(engine::Engine & e) {
-
-	gl::Timer timer;
-	std::deque<GLuint64> timeDeque;
-
-	// shader
-	gl::Shader vert("shader/test/basicdraw.vert", "basic_vert");
-	gl::Shader frag("shader/test/color.frag", "color_frag");
-	gl::Program prog("multi prog");
-	prog.attachShader(vert);
-	prog.attachShader(frag);
-
-	// vbo
-	auto tri = createVertexPositionDataTriangle(NUM_TRIANGLES);
-	gl::Buffer vbo("Multi Draw Pos VBO");
-	vbo.createStorage(static_cast<unsigned int>(tri.size()) * sizeof(float), 0, tri.data());
-
-	const auto primcount = NUM_TRIANGLES * NUM_TRIANGLES;
-	std::vector<GLint> first;
-	first.reserve(primcount);
-	std::vector<GLsizei> count;
-	count.reserve(primcount);
-	for (auto i = 0u; i < NUM_TRIANGLES * NUM_TRIANGLES; ++i) {
-		first.emplace_back(i * 3);
-		count.emplace_back(3);
-	}
-
-	// vao
-	gl::VertexArray vao("Multi Draw VAO");
-	glBindVertexArray(vao);
-	vao.enableAttribBinding(0);
-	vao.bindVertexBuffer(vbo, 0, 0, 2 * sizeof(float), 0);
-	vao.bindVertexFormat(0, 2, GL_FLOAT, GL_FALSE, 0);
-
-	prog.use();
-	prog["col"] = glm::vec3{1.f, 0.f, 0.f};
-	while (e.render()) {
-		timer.start();
-
-		glMultiDrawArrays(GL_TRIANGLES, first.data(), count.data(), primcount);
-
-		timeDeque.emplace_back(timer.stop());
-		if (timeDeque.size() == 100) {
-			const auto ms = getAverageMs(timeDeque);
-			timeDeque.erase(timeDeque.begin(), timeDeque.begin() + 50);
-			LOG("Time: " + std::to_string(ms) + " ms");
-		}
-	}
-
-}
-
-void baseIndexDemo(engine::Engine & e, core::Camera & cam) {
-
-	gl::Timer timer;
-	std::deque<GLuint64> timeDeque;
-
-	// shader
-	gl::Shader vert("shader/test/basicdraw.vert", "basic_vert");
-	gl::Shader frag("shader/test/color.frag", "color_frag");
-	gl::Program prog("basic prog");
-	prog.attachShader(vert);
-	prog.attachShader(frag);
-
-	// vbo
-	// const auto tri = createVertexPositionDataTriangle(NUM_TRIANGLES);
-	const auto tri = createVertexPositionDataCube(NUM_TRIANGLES);
-	gl::Buffer vbo("Basic Draw VBO");
-	vbo.createStorage(static_cast<unsigned int>(tri.size()) * sizeof(GLfloat), 0, tri.data());
-
-	// ibo
-	// std::vector<GLushort> idx;
-	// idx.reserve(NUM_TRIANGLES * NUM_TRIANGLES * 3);
-	// for (auto i = 0u; i < NUM_TRIANGLES; ++i) {
-	// 	for (auto j = 0u; j < NUM_TRIANGLES; ++j) {
-	// 		idx.emplace_back(0);
-	// 		idx.emplace_back(1);
-	// 		idx.emplace_back(2);
-	// 	}
-	// }
-	const auto idx = createVertexIndexDataCube(NUM_TRIANGLES);
-	gl::Buffer ibo("Basic Draw IBO");
-	ibo.createStorage(static_cast<unsigned int>(idx.size()) * sizeof(GLushort), 0, idx.data());
-
-	// vao
-	gl::VertexArray vao("Basic Draw VAO");
-	glBindVertexArray(vao);
-	vao.enableAttribBinding(0);
-	vao.bindVertexBuffer(vbo, 0, 0, 3 * sizeof(float), 0);
-	vao.bindVertexFormat(0, 3, GL_FLOAT, GL_FALSE, 0);
-	vao.bindElementBuffer(ibo);
-
-	prog.use();
-	prog["col"] = glm::vec3{1.f, 0.f, 0.f};
-	while (e.render()) {
-
-		glClear(GL_COLOR_BUFFER_BIT);
-		prog["MVP"] = cam.getProjMatrix() * cam.getViewMatrix();
-
-		timer.start();
-
-		for (auto i = 0u; i < NUM_TRIANGLES * NUM_TRIANGLES; ++i) {
-			// glDrawElementsBaseVertex(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, 0, static_cast<GLint>(i) * 3);
-			glDrawElementsBaseVertex(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0, static_cast<GLint>(i) * 8);
-		}
-
-		timeDeque.emplace_back(timer.stop());
-		if (timeDeque.size() == 100) {
-			const auto ms = getAverageMs(timeDeque);
-			timeDeque.erase(timeDeque.begin(), timeDeque.begin() + 50);
-			LOG("Time: " + std::to_string(ms) + " ms");
-		}
-
-		// cam.translateLocal({0.1f, 0.f, 0.f});
-		// cam.yaw(glm::radians(1.f));
-	}
-
-}
-
 #include "demo.hpp"
 
 int main() {
@@ -689,12 +571,12 @@ int main() {
 	// // instancingDemo(e);
 	// // multidrawElementDemo(e);
 	// // multidrawDemo(e);
-	// baseIndexDemo(e, cam);
-	// // basicDrawDemo(e, cam);
 
 	Demo demo(width, height);
-	demo.use(Demo::RenderType::BASICINDEX);
-	while (!demo.shouldClose()) demo.render();
+	demo.use(Demo::RenderType::MULTI_CUBE);
+	while (!demo.shouldClose()) {
+		demo.render();
+	}
 
 	return EXIT_SUCCESS;
 
