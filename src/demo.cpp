@@ -1,6 +1,7 @@
 #include "demo.hpp"
 
 #include "engine/gl/shader.hpp"
+#include "engine/core/log.hpp"
 
 constexpr auto k_numObjectsRoot = 100u;
 constexpr auto k_numObjects = k_numObjectsRoot * k_numObjectsRoot;

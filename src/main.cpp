@@ -4,6 +4,7 @@
 #include <deque>
 
 #include "engine/engine.hpp"
+
 #include "engine/gl/shader.hpp"
 #include "engine/gl/program.hpp"
 #include "engine/gl/buffer.hpp"
@@ -11,6 +12,7 @@
 #include "engine/gl/timer.hpp"
 
 #include "engine/core/camera.hpp"
+#include "engine/core/log.hpp"
 
 constexpr auto NUM_TRIANGLES = 10u;
 

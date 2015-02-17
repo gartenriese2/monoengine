@@ -2,7 +2,7 @@
 
 #include "glfwinclude.hpp"
 #include "gl/glinclude.hpp"
-#include "debug.hpp"
+#include "core/log.hpp"
 
 namespace engine {
 
@@ -11,6 +11,8 @@ Engine::Engine(const unsigned int width, const unsigned int height,
 
 	initGLFW();
 	m_window = std::make_unique<Window>(width, height, title);
+	m_input = std::make_unique<core::Input>(m_window->getGLFWWindow());
+	glfwSetWindowUserPointer(m_window->getGLFWWindow(), this);
 	initGL();
 
 	if (debugging && glewIsSupported("GL_ARB_debug_output")) initDebugging();
@@ -151,9 +153,5 @@ bool Engine::render() {
 	return m_window->render();
 
 }
-
-
-
-
 
 } // namespace engine

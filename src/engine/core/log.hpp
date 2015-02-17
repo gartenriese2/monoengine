@@ -1,17 +1,16 @@
-#ifndef _DEBUG_
-#define _DEBUG_
+#pragma once
 
 #include <iostream>
 #include <glm/glm.hpp>
 
-#define DEB engine::Debug::log("DEBUG: " + std::string(__FILE__) + " " + __FUNCTION__ + " " + std::to_string(__LINE__));
-#define LOG(...) engine::Debug::log(__VA_ARGS__)
-#define LOG_WARNING(...) engine::Debug::logWarning(__VA_ARGS__)
-#define LOG_ERROR(...) engine::Debug::logError(__VA_ARGS__)
+#define DEB core::Log::log("DEBUG: " + std::string(__FILE__) + " " + __FUNCTION__ + " " + std::to_string(__LINE__));
+#define LOG(...) core::Log::log(__VA_ARGS__)
+#define LOG_WARNING(...) core::Log::logWarning(__VA_ARGS__)
+#define LOG_ERROR(...) core::Log::logError(__VA_ARGS__)
 
-namespace engine {
+namespace core {
 
-class Debug {
+class Log {
 
 	public:
 
@@ -80,7 +79,7 @@ class Debug {
 
 	protected:
 
-		static Debug * s_instance;
+		static Log * s_instance;
 
 		friend class Cleanup;
 		class Cleanup {
@@ -90,17 +89,15 @@ class Debug {
 
 	private:
 
-		Debug() {}
-		Debug(const Debug &) = delete;
-		Debug(Debug &&) = delete;
-		Debug & operator=(const Debug &) = delete;
-		Debug & operator=(Debug &&) = delete;
-		virtual ~Debug() {}
+		Log() {}
+		Log(const Log &) = delete;
+		Log(Log &&) = delete;
+		Log & operator=(const Log &) = delete;
+		Log & operator=(Log &&) = delete;
+		virtual ~Log() {}
 
-		Debug & instance();
+		Log & instance();
 
 };
 
-} // namespace engine
-
-#endif // _DEBUG_
+} // namespace core

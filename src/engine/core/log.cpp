@@ -1,30 +1,30 @@
-#include "debug.hpp"
+#include "log.hpp"
 
-#include "gl/glinclude.hpp"
+#include "../gl/glinclude.hpp"
 
-namespace engine {
+namespace core {
 
-Debug * Debug::s_instance = nullptr;
+Log * Log::s_instance = nullptr;
 
-Debug & Debug::instance() {
+Log & Log::instance() {
 
 	static Cleanup cleanup;
 	if (s_instance == nullptr) {
-		s_instance = new Debug();
+		s_instance = new Log();
 	}
 
 	return * s_instance;
 
 }
 
-Debug::Cleanup::~Cleanup() {
+Log::Cleanup::~Cleanup() {
 
-	delete Debug::s_instance;
-	Debug::s_instance = nullptr;
+	delete Log::s_instance;
+	Log::s_instance = nullptr;
 
 }
 
-void Debug::logGL() {
+void Log::logGL() {
 
 	auto err = glGetError();
 	switch(err) {
@@ -52,4 +52,4 @@ void Debug::logGL() {
 
 }
 
-} // namespace engine
+} // namespace core

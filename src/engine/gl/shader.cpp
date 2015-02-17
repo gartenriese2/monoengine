@@ -1,6 +1,6 @@
 #include "shader.hpp"
 
-#include "../debug.hpp"
+#include "../core/log.hpp"
 
 #include <fstream>
 #include <vector>

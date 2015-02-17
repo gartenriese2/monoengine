@@ -15,6 +15,8 @@ class Window {
 		Window(unsigned int, unsigned int, const std::string &);
 		~Window();
 
+		GLFWwindow * getGLFWWindow() { return m_win; }
+
 		bool render();
 
 	private:

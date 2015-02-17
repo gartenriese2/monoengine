@@ -1,6 +1,6 @@
 #include "window.hpp"
 
-#include "debug.hpp"
+#include "core/log.hpp"
 
 namespace engine {
 
@@ -12,6 +12,7 @@ Window::Window(const unsigned int width, const unsigned int height, const std::s
 		LOG_ERROR("Could not create GLFW Window!");
 	}
 	glfwMakeContextCurrent(m_win);
+	glfwSwapInterval(1);
 }
 
 Window::~Window() {

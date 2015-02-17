@@ -1,6 +1,6 @@
 #include "globject.hpp"
 
-#include "../debug.hpp"
+#include "../core/log.hpp"
 
 namespace gl {
 

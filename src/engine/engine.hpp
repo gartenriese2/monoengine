@@ -1,7 +1,7 @@
-#ifndef _ENGINE_
-#define _ENGINE_
+#pragma once
 
 #include "window.hpp"
+#include "core/input.hpp"
 
 #include <memory>
 
@@ -14,6 +14,8 @@ class Engine {
 		Engine(unsigned int, unsigned int, const std::string &, bool = false);
 		~Engine();
 
+		std::unique_ptr<core::Input> & getInputPtr() { return m_input; }
+
 		bool render();
 
 	private:
@@ -23,9 +25,8 @@ class Engine {
 		void initDebugging();
 
 		std::unique_ptr<Window> m_window;
+		std::unique_ptr<core::Input> m_input;
 
 };
 
 } // namespace engine
-
-#endif // _ENGINE_

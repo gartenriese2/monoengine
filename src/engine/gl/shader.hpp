@@ -1,7 +1,7 @@
 #pragma once
 
 #include "globject.hpp"
-#include "../debug.hpp"
+
 #include <string>
 
 namespace gl {

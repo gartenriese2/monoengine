@@ -1,7 +1,7 @@
 #include "program.hpp"
 
 #include "shader.hpp"
-#include "../debug.hpp"
+#include "../core/log.hpp"
 
 #include <vector>
 #include <memory>
