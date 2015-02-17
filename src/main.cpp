@@ -483,6 +483,97 @@ void instancingDemo(engine::Engine & e) {
 }
 
 #include "demo.hpp"
+#include "engine/extern/imgui.h"
+
+void updateImgui() {
+	auto & io = ImGui::GetIO();
+	io.MousePos = ImVec2(0, 0);
+	// io.MouseDown[0] = mouse_button_0;
+	// io.KeysDown[i] = ...
+
+	ImGui::NewFrame();
+
+	ImGui::Begin("My window");
+	ImGui::Text("Hello, world.");
+	ImGui::End();
+}
+
+void ImImpl_RenderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_count)
+{
+    if (cmd_lists_count == 0)
+        return;
+    // TODO save state
+
+    // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled
+    glEnable(GL_BLEND);
+    glBlendEquation(GL_FUNC_ADD);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_SCISSOR_TEST);
+    // Setup texture
+    glActiveTexture(GL_TEXTURE0);
+    //glBindTexture(GL_TEXTURE_2D, GuiData.fontTex);
+
+    // const float width = ImGui::GetIO().DisplaySize.x;
+    const float height = ImGui::GetIO().DisplaySize.y;
+    // const float ortho_projection[4][4] =
+    // {
+    //     { 2.0f/width, 0.0f, 0.0f, 0.0f },
+    //     { 0.0f, 2.0f/-height, 0.0f, 0.0f },
+    //     { 0.0f, 0.0f, -1.0f, 0.0f },
+    //     { -1.0f, 1.0f, 0.0f, 1.0f },
+    // };
+    // glUseProgram(GuiData.program);
+    // glUniform1i(GuiData.texture_location, 0);
+    // glUniformMatrix4fv(GuiData.ortho_location, 1, GL_FALSE, &ortho_projection[0][0]);
+
+    // Grow our buffer according to what we need
+    size_t total_vtx_count = 0;
+    for (int n = 0; n < cmd_lists_count; n++)
+        total_vtx_count += cmd_lists[n]->vtx_buffer.size();
+
+    // glBindBuffer(GL_ARRAY_BUFFER, GuiData.vbo_handle);
+    // size_t neededBufferSize = total_vtx_count * sizeof(ImDrawVert);
+    // if (neededBufferSize > vbo_max_size) {
+    //     vbo_max_size = neededBufferSize + 5000; // Grow buffer
+    //     glBufferData(GL_ARRAY_BUFFER,
+    //             static_cast<GLsizeiptr>(vbo_max_size), NULL, GL_STREAM_DRAW);
+    // }
+
+    // Copy and convert all vertices into a single contiguous buffer
+    unsigned char* buffer_data = (unsigned char*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    if (!buffer_data)
+        return;
+    for (int n = 0; n < cmd_lists_count; n++) {
+        const ImDrawList* cmd_list = cmd_lists[n];
+        std::memcpy(buffer_data, &cmd_list->vtx_buffer[0], cmd_list->vtx_buffer.size() * sizeof(ImDrawVert));
+        buffer_data += cmd_list->vtx_buffer.size() * sizeof(ImDrawVert);
+    }
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // glBindVertexArray(GuiData.vao_handle);
+    int cmd_offset = 0;
+    for (int n = 0; n < cmd_lists_count; n++) {
+        const ImDrawList* cmd_list = cmd_lists[n];
+        int vtx_offset = cmd_offset;
+        for (const auto& pcmd : cmd_list->commands) {
+            glScissor((int)pcmd.clip_rect.x,
+                      (int)(height - pcmd.clip_rect.w),
+                      (int)(pcmd.clip_rect.z - pcmd.clip_rect.x),
+                      (int)(pcmd.clip_rect.w - pcmd.clip_rect.y));
+            glDrawArrays(GL_TRIANGLES, vtx_offset, static_cast<GLsizei>(pcmd.vtx_count));
+            vtx_offset += pcmd.vtx_count;
+        }
+        cmd_offset = vtx_offset;
+    }
+    // Restore modified state
+    glBindVertexArray(0);
+    glUseProgram(0);
+    glDisable(GL_SCISSOR_TEST);
+    glDisable(GL_BLEND);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
 
 int main() {
 
@@ -502,10 +593,24 @@ int main() {
 	// // instancingElementDemo(e);
 	// // instancingDemo(e);
 
+	// Application init
+	ImGuiIO& io = ImGui::GetIO();
+	io.DisplaySize.x = width;
+	io.DisplaySize.y = height;
+	io.DeltaTime = 1.0f/60.0f;
+	io.IniFilename = "imgui.ini";
+	unsigned char* pixels;
+    int width2, height2, bytes_per_pixels;
+	io.Fonts->GetTexDataAsRGBA32(&pixels, &width2, &height2, &bytes_per_pixels);
+	io.RenderDrawListsFn = ImImpl_RenderDrawLists;
+	// TODO: Fill others settings of the io structure
+
 	Demo demo(width, height);
 	demo.use(Demo::RenderType::MULTIINDEX_CUBE);
 	while (!demo.shouldClose()) {
 		demo.render();
+		updateImgui();
+		ImGui::Render();
 	}
 
 	return EXIT_SUCCESS;

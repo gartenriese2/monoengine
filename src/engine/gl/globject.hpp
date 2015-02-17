@@ -1,6 +1,6 @@
 #pragma once
 
-#include "glinclude.hpp"
+#include "../extern/glinclude.hpp"
 
 #include <functional>
 

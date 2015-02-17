@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../glfwinclude.hpp"
+#include "../extern/glfwinclude.hpp"
 
 #include <vector>
 #include <functional>

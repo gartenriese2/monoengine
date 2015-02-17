@@ -1,6 +1,6 @@
 #pragma once
 
-#include "glinclude.hpp"
+#include "../extern/glinclude.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>

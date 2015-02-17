@@ -1,7 +1,6 @@
-#ifndef _WINDOW_
-#define _WINDOW_
+#pragma once
 
-#include "glfwinclude.hpp"
+#include "extern/glfwinclude.hpp"
 
 #include <string>
 
@@ -26,5 +25,3 @@ class Window {
 };
 
 } // namespace engine
-
-#endif // _WINDOW_

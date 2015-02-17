@@ -1,7 +1,7 @@
 #include "engine.hpp"
 
-#include "glfwinclude.hpp"
-#include "gl/glinclude.hpp"
+#include "extern/glfwinclude.hpp"
+#include "extern/glinclude.hpp"
 #include "core/log.hpp"
 
 namespace engine {

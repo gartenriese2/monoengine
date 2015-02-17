@@ -1,6 +1,6 @@
 #include "log.hpp"
 
-#include "../gl/glinclude.hpp"
+#include "../extern/glinclude.hpp"
 
 namespace core {
 
