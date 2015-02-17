@@ -2,7 +2,7 @@
 
 #include "engine/gl/shader.hpp"
 
-constexpr auto k_numObjectsRoot = 10u;
+constexpr auto k_numObjectsRoot = 100u;
 constexpr auto k_numObjects = k_numObjectsRoot * k_numObjectsRoot;
 
 Demo::Demo(const unsigned int width, const unsigned int height)
@@ -45,6 +45,7 @@ void Demo::initBuffers() {
 	const auto delta = stepSize / 4.f;
 	std::vector<GLfloat> vec;
 	std::vector<GLushort> idx;
+	std::vector<GLuint> idxInt;
 
 	/*
 	 *	vboTriangle
@@ -243,11 +244,11 @@ void Demo::initBuffers() {
 	 *	multi
 	 */
 
-	m_multiOffsets.reserve(k_numObjects);
-	m_multiCounts.reserve(k_numObjects);
+	m_multiOffsetsTriangle.reserve(k_numObjects);
+	m_multiCountsTriangle.reserve(k_numObjects);
 	for (auto i = 0u; i < k_numObjects; ++i) {
-		m_multiOffsets.emplace_back(i * 3);
-		m_multiCounts.emplace_back(3);
+		m_multiOffsetsTriangle.emplace_back(i * 3);
+		m_multiCountsTriangle.emplace_back(3);
 	}
 
 	m_multiOffsetsCube.reserve(k_numObjects);
@@ -256,6 +257,84 @@ void Demo::initBuffers() {
 		m_multiOffsetsCube.emplace_back(i * 108);
 		m_multiCountsCube.emplace_back(108);
 	}
+
+	/*
+	 *	multi indexed
+	 */
+
+ 	m_multiOffsetsTriangleIndexed.reserve(k_numObjects);
+	m_multiCountsTriangleIndexed.reserve(k_numObjects);
+	m_multiBaseVertexTriangle.reserve(k_numObjects);
+	for (auto i = 0u; i < k_numObjects; ++i) {
+		m_multiOffsetsTriangleIndexed.emplace_back(static_cast<GLchar *>(0) + (i * 3 * sizeof(GLuint)));
+		m_multiCountsTriangleIndexed.emplace_back(3);
+		m_multiBaseVertexTriangle.emplace_back(i * 3);
+	}
+
+
+	idxInt.reserve(k_numObjects * 3);
+	for (auto i = 0u; i < k_numObjects; ++i) {
+		idxInt.emplace_back(0);
+		idxInt.emplace_back(1);
+		idxInt.emplace_back(2);
+	}
+	m_iboMultiTriangle.createStorage(static_cast<unsigned int>(idxInt.size()) * sizeof(GLuint), 0, idxInt.data());
+
+	m_multiOffsetsCubeIndexed.reserve(k_numObjects);
+	m_multiCountsCubeIndexed.reserve(k_numObjects);
+	m_multiBaseVertexCube.reserve(k_numObjects);
+	for (auto i = 0u; i < k_numObjects; ++i) {
+		m_multiOffsetsCubeIndexed.emplace_back(static_cast<GLchar *>(0) + (i * 36 * sizeof(GLuint)));
+		m_multiCountsCubeIndexed.emplace_back(36);
+		m_multiBaseVertexCube.emplace_back(i * 8);
+	}
+
+	idxInt.clear();
+	idxInt.reserve(k_numObjects * 36);
+	for (auto i = 0u; i < k_numObjects; ++i) {
+		idxInt.emplace_back(0);
+		idxInt.emplace_back(1);
+		idxInt.emplace_back(2);
+		idxInt.emplace_back(0);
+		idxInt.emplace_back(2);
+		idxInt.emplace_back(3);
+
+		idxInt.emplace_back(4);
+		idxInt.emplace_back(0);
+		idxInt.emplace_back(3);
+		idxInt.emplace_back(4);
+		idxInt.emplace_back(3);
+		idxInt.emplace_back(7);
+
+		idxInt.emplace_back(5);
+		idxInt.emplace_back(4);
+		idxInt.emplace_back(7);
+		idxInt.emplace_back(5);
+		idxInt.emplace_back(7);
+		idxInt.emplace_back(6);
+
+		idxInt.emplace_back(1);
+		idxInt.emplace_back(5);
+		idxInt.emplace_back(6);
+		idxInt.emplace_back(1);
+		idxInt.emplace_back(6);
+		idxInt.emplace_back(2);
+
+		idxInt.emplace_back(3);
+		idxInt.emplace_back(2);
+		idxInt.emplace_back(6);
+		idxInt.emplace_back(3);
+		idxInt.emplace_back(6);
+		idxInt.emplace_back(7);
+
+		idxInt.emplace_back(4);
+		idxInt.emplace_back(5);
+		idxInt.emplace_back(1);
+		idxInt.emplace_back(4);
+		idxInt.emplace_back(1);
+		idxInt.emplace_back(0);
+	}
+	m_iboMultiCube.createStorage(static_cast<unsigned int>(idxInt.size()) * sizeof(GLuint), 0, idxInt.data());
 
 }
 
@@ -282,6 +361,18 @@ void Demo::initVAOs() {
 	m_vaoCubeIndex.bindVertexBuffer(m_vboCubeIndexed, 0, 0, 3 * sizeof(float), 0);
 	m_vaoCubeIndex.bindVertexFormat(0, 3, GL_FLOAT, GL_FALSE, 0);
 	m_vaoCubeIndex.bindElementBuffer(m_iboCube);
+
+	glBindVertexArray(m_vaoTriangleIndexMulti);
+	m_vaoTriangleIndexMulti.enableAttribBinding(0);
+	m_vaoTriangleIndexMulti.bindVertexBuffer(m_vboTriangle, 0, 0, 2 * sizeof(float), 0);
+	m_vaoTriangleIndexMulti.bindVertexFormat(0, 2, GL_FLOAT, GL_FALSE, 0);
+	m_vaoTriangleIndexMulti.bindElementBuffer(m_iboMultiTriangle);
+
+	glBindVertexArray(m_vaoCubeIndexMulti);
+	m_vaoCubeIndexMulti.enableAttribBinding(0);
+	m_vaoCubeIndexMulti.bindVertexBuffer(m_vboCubeIndexed, 0, 0, 3 * sizeof(float), 0);
+	m_vaoCubeIndexMulti.bindVertexFormat(0, 3, GL_FLOAT, GL_FALSE, 0);
+	m_vaoCubeIndexMulti.bindElementBuffer(m_iboMultiCube);
 
 }
 
@@ -317,12 +408,26 @@ void Demo::initFunctions() {
 
 	m_funcs.emplace(RenderType::MULTI_TRIANGLE, [&](){
 		m_basicProg["MVP"] = m_cam.getProjMatrix() * m_cam.getViewMatrix();
-		glMultiDrawArrays(GL_TRIANGLES, m_multiOffsets.data(), m_multiCounts.data(), k_numObjects);
+		glMultiDrawArrays(GL_TRIANGLES, m_multiOffsetsTriangle.data(), m_multiCountsTriangle.data(), k_numObjects);
 	});
 
 	m_funcs.emplace(RenderType::MULTI_CUBE, [&](){
 		m_basicProg["MVP"] = m_cam.getProjMatrix() * m_cam.getViewMatrix();
 		glMultiDrawArrays(GL_TRIANGLES, m_multiOffsetsCube.data(), m_multiCountsCube.data(), k_numObjects);
+	});
+
+	m_funcs.emplace(RenderType::MULTIINDEX_TRIANGLE, [&](){
+		m_basicProg["MVP"] = m_cam.getProjMatrix() * m_cam.getViewMatrix();
+		glMultiDrawElementsBaseVertex(GL_TRIANGLES, m_multiCountsTriangleIndexed.data(), GL_UNSIGNED_INT,
+				reinterpret_cast<const void * const *>(m_multiOffsetsTriangleIndexed.data()),
+				k_numObjects, m_multiBaseVertexTriangle.data());
+	});
+
+	m_funcs.emplace(RenderType::MULTIINDEX_CUBE, [&](){
+		m_basicProg["MVP"] = m_cam.getProjMatrix() * m_cam.getViewMatrix();
+		glMultiDrawElementsBaseVertex(GL_TRIANGLES, m_multiCountsCubeIndexed.data(), GL_UNSIGNED_INT,
+				reinterpret_cast<const void * const *>(m_multiOffsetsCubeIndexed.data()),
+				k_numObjects, m_multiBaseVertexCube.data());
 	});
 
 }
@@ -374,6 +479,18 @@ void Demo::use(const RenderType type) {
 			m_basicProg["col"] = glm::vec3{1.f, 0.f, 0.f};
 			m_renderFunc = m_funcs.at(type);
 			glBindVertexArray(m_vaoCube);
+			break;
+		case RenderType::MULTIINDEX_TRIANGLE:
+			m_basicProg.use();
+			m_basicProg["col"] = glm::vec3{1.f, 0.f, 0.f};
+			m_renderFunc = m_funcs.at(type);
+			glBindVertexArray(m_vaoTriangleIndexMulti);
+			break;
+		case RenderType::MULTIINDEX_CUBE:
+			m_basicProg.use();
+			m_basicProg["col"] = glm::vec3{1.f, 0.f, 0.f};
+			m_renderFunc = m_funcs.at(type);
+			glBindVertexArray(m_vaoCubeIndexMulti);
 			break;
 	}
 

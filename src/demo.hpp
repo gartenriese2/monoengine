@@ -18,7 +18,8 @@ class Demo {
 		enum class RenderType : std::int8_t {
 				BASIC_TRIANGLE, BASIC_CUBE,
 				BASICINDEX_TRIANGLE, BASICINDEX_CUBE,
-				MULTI_TRIANGLE, MULTI_CUBE
+				MULTI_TRIANGLE, MULTI_CUBE,
+				MULTIINDEX_TRIANGLE, MULTIINDEX_CUBE
 		};
 
 		Demo(unsigned int, unsigned int);
@@ -47,15 +48,25 @@ class Demo {
 		gl::Buffer m_vboCubeIndexed;
 		gl::Buffer m_iboTriangle;
 		gl::Buffer m_iboCube;
-		std::vector<GLint> m_multiOffsets;
-		std::vector<GLsizei> m_multiCounts;
+		gl::Buffer m_iboMultiTriangle;
+		gl::Buffer m_iboMultiCube;
+		std::vector<GLint> m_multiOffsetsTriangle;
+		std::vector<GLsizei> m_multiCountsTriangle;
 		std::vector<GLint> m_multiOffsetsCube;
 		std::vector<GLsizei> m_multiCountsCube;
+		std::vector<GLchar *> m_multiOffsetsTriangleIndexed;
+		std::vector<GLsizei> m_multiCountsTriangleIndexed;
+		std::vector<GLint> m_multiBaseVertexTriangle;
+		std::vector<GLchar *> m_multiOffsetsCubeIndexed;
+		std::vector<GLsizei> m_multiCountsCubeIndexed;
+		std::vector<GLint> m_multiBaseVertexCube;
 
 		gl::VertexArray m_vaoTriangle;
 		gl::VertexArray m_vaoTriangleIndex;
+		gl::VertexArray m_vaoTriangleIndexMulti;
 		gl::VertexArray m_vaoCube;
 		gl::VertexArray m_vaoCubeIndex;
+		gl::VertexArray m_vaoCubeIndexMulti;
 
 		gl::Timer m_timer;
 		std::deque<GLuint64> m_timeDeque;

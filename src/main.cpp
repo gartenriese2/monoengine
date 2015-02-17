@@ -480,76 +480,6 @@ void instancingDemo(engine::Engine & e) {
 
 }
 
-void multidrawElementDemo(engine::Engine & e) {
-
-	gl::Timer timer;
-	std::deque<GLuint64> timeDeque;
-	constexpr auto primcount = NUM_TRIANGLES * NUM_TRIANGLES;
-
-	// shader
-	gl::Shader vert("shader/test/basicdraw.vert", "basic_vert");
-	gl::Shader frag("shader/test/color.frag", "color_frag");
-	gl::Program prog("multi prog");
-	prog.attachShader(vert);
-	prog.attachShader(frag);
-
-	// vbo
-	// const auto tri = createVertexPositionDataTriangle(NUM_TRIANGLES);
-	const auto tri = createVertexPositionDataCube(NUM_TRIANGLES);
-	gl::Buffer vbo("Multi Draw VBO");
-	vbo.createStorage(static_cast<unsigned int>(tri.size()) * sizeof(float), 0, tri.data());
-
-	// ibo
-	// std::vector<GLuint> idx;
-	// idx.reserve(primcount * 3);
-	// for (auto i = 0u; i < primcount; ++i) {
-	// 	idx.emplace_back(0);
-	// 	idx.emplace_back(1);
-	// 	idx.emplace_back(2);
-	// }
-	const auto idx = createVertexIndexDataCube(NUM_TRIANGLES);
-	gl::Buffer ibo("Multi Draw IBO");
-	ibo.createStorage(static_cast<unsigned int>(idx.size()) * sizeof(GLuint), 0, idx.data());
-
-
-	std::vector<GLchar *> offsets;
-	offsets.reserve(primcount);
-	std::vector<GLsizei> count;
-	count.reserve(primcount);
-	std::vector<GLint> basevertex;
-	basevertex.reserve(primcount);
-	for (auto i = 0u; i < primcount; ++i) {
-		offsets.emplace_back(static_cast<GLchar *>(0) + (i * 3 * sizeof(GLuint)));
-		count.emplace_back(3);
-		basevertex.emplace_back(i * 3);
-	}
-
-	// vao
-	gl::VertexArray vao("Multi Draw VAO");
-	glBindVertexArray(vao);
-	vao.enableAttribBinding(0);
-	vao.bindVertexBuffer(vbo, 0, 0, 2 * sizeof(float), 0);
-	vao.bindVertexFormat(0, 2, GL_FLOAT, GL_FALSE, 0);
-	vao.bindElementBuffer(ibo);
-
-	prog.use();
-	prog["col"] = glm::vec3{1.f, 0.f, 0.f};
-	while (e.render()) {
-		timer.start();
-
-		glMultiDrawElementsBaseVertex(GL_TRIANGLES, count.data(), GL_UNSIGNED_INT,
-				reinterpret_cast<const void * const *>(offsets.data()), primcount, basevertex.data());
-
-		timeDeque.emplace_back(timer.stop());
-		if (timeDeque.size() == 100) {
-			const auto ms = getAverageMs(timeDeque);
-			timeDeque.erase(timeDeque.begin(), timeDeque.begin() + 50);
-			LOG("Time: " + std::to_string(ms) + " ms");
-		}
-	}
-
-}
-
 #include "demo.hpp"
 
 int main() {
@@ -569,11 +499,9 @@ int main() {
 	// // vertexPullingDemo();
 	// // instancingElementDemo(e);
 	// // instancingDemo(e);
-	// // multidrawElementDemo(e);
-	// // multidrawDemo(e);
 
 	Demo demo(width, height);
-	demo.use(Demo::RenderType::MULTI_CUBE);
+	demo.use(Demo::RenderType::MULTIINDEX_CUBE);
 	while (!demo.shouldClose()) {
 		demo.render();
 	}
