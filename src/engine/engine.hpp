@@ -2,6 +2,7 @@
 
 #include "window.hpp"
 #include "core/input.hpp"
+#include "gui.hpp"
 
 #include <memory>
 
@@ -15,6 +16,7 @@ class Engine {
 		~Engine();
 
 		std::unique_ptr<core::Input> & getInputPtr() { return m_input; }
+		std::unique_ptr<Gui> & getGuiPtr() { return m_gui; }
 
 		bool render();
 
@@ -26,6 +28,7 @@ class Engine {
 
 		std::unique_ptr<Window> m_window;
 		std::unique_ptr<core::Input> m_input;
+		std::unique_ptr<Gui> m_gui;
 
 };
 

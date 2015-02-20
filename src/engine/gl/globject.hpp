@@ -19,6 +19,7 @@ class GLObject {
 		~GLObject();
 
 		operator GLuint() const { return m_handle; }
+		GLuint * getHandlePtr() { return &m_handle; } // imgui needs this
 
 	private:
 

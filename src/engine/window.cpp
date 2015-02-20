@@ -5,8 +5,10 @@
 namespace engine {
 
 Window::Window(const unsigned int width, const unsigned int height, const std::string & name)
-  : m_win(glfwCreateWindow(static_cast<int>(width), static_cast<int>(height),
-			name.c_str(), NULL, NULL))
+  : m_win{glfwCreateWindow(static_cast<int>(width), static_cast<int>(height),
+			name.c_str(), NULL, NULL)},
+	m_width{width},
+	m_height{height}
 {
 	if (!m_win) {
 		LOG_ERROR("Could not create GLFW Window!");

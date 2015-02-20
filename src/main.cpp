@@ -82,17 +82,17 @@ void vertexPullingDemo() {
 	// instance manager stuff
 	gl::Buffer instanceBuffer("instance buffer");
 	constexpr int MAX_NUM_INSTANCES = 12000;
-	instanceBuffer.createStorage(MAX_NUM_INSTANCES, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT);
+	instanceBuffer.createImmutableStorage(MAX_NUM_INSTANCES, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT);
 	//auto instanceDataPtr = instanceBuffer.getDataPointer(MAX_NUM_INSTANCES,
 	//          GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
 
 	// mesh manager stuff
 	gl::Buffer meshDataBuffer("vertex shader storage buffer");
-	meshDataBuffer.createStorage(268435456, GL_MAP_WRITE_BIT | GL_DYNAMIC_STORAGE_BIT);
+	meshDataBuffer.createImmutableStorage(268435456, GL_MAP_WRITE_BIT | GL_DYNAMIC_STORAGE_BIT);
 	m_freelist.emplace_back(0, 0, 268435456);
 	gl::Buffer meshPoolBuffer("mesh pool");
 	constexpr int MAX_NUM_MESHES = 1200;
-	meshPoolBuffer.createStorage(MAX_NUM_MESHES, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT);
+	meshPoolBuffer.createImmutableStorage(MAX_NUM_MESHES, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT);
 	//auto meshPoolDataPtr = meshPoolBuffer.getDataPointer(MAX_NUM_MESHES,
 	//          GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
 
@@ -174,201 +174,6 @@ void vertexPullingDemo() {
 
 }
 
-std::vector<GLfloat> createVertexPositionDataTriangle(unsigned int num) {
-
-	std::vector<GLfloat> vec;
-	vec.reserve(num * num * 6);
-
-	const auto stepSize = 2.f / static_cast<float>(num);
-	for (auto i = -1.f; i < 1.f; i += stepSize) {
-		for (auto j = -1.f; j < 1.f; j += stepSize) {
-			vec.emplace_back(i);
-			vec.emplace_back(j);
-			vec.emplace_back(i + stepSize);
-			vec.emplace_back(j);
-			vec.emplace_back(i + stepSize / 2.f);
-			vec.emplace_back(j + stepSize);
-		}
-	}
-
-	return vec;
-
-}
-
-std::vector<GLfloat> createVertexPositionDataCubeForArrays(unsigned int num) {
-
-	std::vector<GLfloat> vec;
-	vec.reserve(num * num * 108);
-
-	auto empl = [&vec](const glm::vec3 v){
-		vec.emplace_back(v.x);
-		vec.emplace_back(v.y);
-		vec.emplace_back(v.z);
-	};
-
-	const auto stepSize = 2.f / static_cast<float>(num);
-	const auto delta = stepSize / 4.f;
-	for (auto i = -1.f; i < 1.f; i += stepSize) {
-		for (auto j = -1.f; j < 1.f; j += stepSize) {
-			std::vector<glm::vec3> vertices;
-			vertices.emplace_back(i + delta, j + delta, stepSize / 2.f - delta);
-			vertices.emplace_back(i + stepSize - delta, j + delta, stepSize / 2.f - delta);
-			vertices.emplace_back(i + stepSize - delta, j + stepSize - delta, stepSize / 2.f - delta);
-			vertices.emplace_back(i + delta, j + stepSize - delta, stepSize / 2.f - delta);
-			vertices.emplace_back(vertices[0] - glm::vec3{0.f, 0.f, stepSize + 2.f * delta});
-			vertices.emplace_back(vertices[1] - glm::vec3{0.f, 0.f, stepSize + 2.f * delta});
-			vertices.emplace_back(vertices[2] - glm::vec3{0.f, 0.f, stepSize + 2.f * delta});
-			vertices.emplace_back(vertices[3] - glm::vec3{0.f, 0.f, stepSize + 2.f * delta});
-
-			empl(vertices[0]);
-			empl(vertices[1]);
-			empl(vertices[2]);
-			empl(vertices[0]);
-			empl(vertices[2]);
-			empl(vertices[3]);
-
-			empl(vertices[4]);
-			empl(vertices[0]);
-			empl(vertices[3]);
-			empl(vertices[4]);
-			empl(vertices[3]);
-			empl(vertices[7]);
-
-			empl(vertices[5]);
-			empl(vertices[4]);
-			empl(vertices[7]);
-			empl(vertices[5]);
-			empl(vertices[7]);
-			empl(vertices[6]);
-
-			empl(vertices[1]);
-			empl(vertices[5]);
-			empl(vertices[6]);
-			empl(vertices[1]);
-			empl(vertices[6]);
-			empl(vertices[2]);
-
-			empl(vertices[3]);
-			empl(vertices[2]);
-			empl(vertices[6]);
-			empl(vertices[3]);
-			empl(vertices[6]);
-			empl(vertices[7]);
-
-			empl(vertices[4]);
-			empl(vertices[5]);
-			empl(vertices[1]);
-			empl(vertices[4]);
-			empl(vertices[1]);
-			empl(vertices[0]);
-
-		}
-	}
-
-	return vec;
-
-}
-
-std::vector<GLfloat> createVertexPositionDataCube(unsigned int num) {
-
-	std::vector<GLfloat> vec;
-	vec.reserve(num * num * 24);
-
-	const auto stepSize = 2.f / static_cast<float>(num);
-	const auto delta = stepSize / 4.f;
-	for (auto i = -1.f; i < 1.f; i += stepSize) {
-		for (auto j = -1.f; j < 1.f; j += stepSize) {
-			vec.emplace_back(i + delta);
-			vec.emplace_back(j + delta);
-			vec.emplace_back(stepSize - delta);
-
-			vec.emplace_back(i + stepSize - delta);
-			vec.emplace_back(j + delta);
-			vec.emplace_back(stepSize - delta);
-
-			vec.emplace_back(i + stepSize - delta);
-			vec.emplace_back(j + stepSize - delta);
-			vec.emplace_back(stepSize - delta);
-
-			vec.emplace_back(i + delta);
-			vec.emplace_back(j + stepSize - delta);
-			vec.emplace_back(stepSize - delta);
-
-			vec.emplace_back(i + delta);
-			vec.emplace_back(j + delta);
-			vec.emplace_back(delta - stepSize);
-
-			vec.emplace_back(i + stepSize - delta);
-			vec.emplace_back(j + delta);
-			vec.emplace_back(delta - stepSize);
-
-			vec.emplace_back(i + stepSize - delta);
-			vec.emplace_back(j + stepSize - delta);
-			vec.emplace_back(delta - stepSize);
-
-			vec.emplace_back(i + delta);
-			vec.emplace_back(j + stepSize - delta);
-			vec.emplace_back(delta - stepSize);
-		}
-	}
-
-	return vec;
-
-}
-
-std::vector<GLushort> createVertexIndexDataCube(unsigned int num) {
-
-	std::vector<GLushort> vec;
-	vec.reserve(num * num * 36);
-
-	for (auto i = 0u; i < num * num; ++i) {
-		vec.emplace_back(0);
-		vec.emplace_back(1);
-		vec.emplace_back(2);
-		vec.emplace_back(0);
-		vec.emplace_back(2);
-		vec.emplace_back(3);
-
-		vec.emplace_back(4);
-		vec.emplace_back(0);
-		vec.emplace_back(3);
-		vec.emplace_back(4);
-		vec.emplace_back(3);
-		vec.emplace_back(7);
-
-		vec.emplace_back(5);
-		vec.emplace_back(4);
-		vec.emplace_back(7);
-		vec.emplace_back(5);
-		vec.emplace_back(7);
-		vec.emplace_back(6);
-
-		vec.emplace_back(1);
-		vec.emplace_back(5);
-		vec.emplace_back(6);
-		vec.emplace_back(1);
-		vec.emplace_back(6);
-		vec.emplace_back(2);
-
-		vec.emplace_back(3);
-		vec.emplace_back(2);
-		vec.emplace_back(6);
-		vec.emplace_back(3);
-		vec.emplace_back(6);
-		vec.emplace_back(7);
-
-		vec.emplace_back(4);
-		vec.emplace_back(5);
-		vec.emplace_back(1);
-		vec.emplace_back(4);
-		vec.emplace_back(1);
-		vec.emplace_back(0);
-	}
-
-	return vec;
-
-}
-
 auto getAverageMs(const std::deque<GLuint64> & deque) {
 	auto avg = 0.0;
 	for (const auto & t : deque) {
@@ -399,21 +204,21 @@ void instancingElementDemo(engine::Engine & e) {
 		-1.f + dif / 2.f, -1.f + dif
 	};
 	gl::Buffer vbo("Instance Draw VBO");
-	vbo.createStorage(static_cast<unsigned int>(tri.size()) * sizeof(float), 0, tri.data());
+	vbo.createImmutableStorage(static_cast<unsigned int>(tri.size()) * sizeof(float), 0, tri.data());
 
 	// ibo
 	std::vector<GLubyte> idx = {
 		0, 1, 2
 	};
 	gl::Buffer ibo("Instance Draw IBO");
-	ibo.createStorage(static_cast<unsigned int>(idx.size()) * sizeof(GLubyte), 0, idx.data());
+	ibo.createImmutableStorage(static_cast<unsigned int>(idx.size()) * sizeof(GLubyte), 0, idx.data());
 
 	// vao
 	gl::VertexArray vao("Multi Draw VAO");
 	glBindVertexArray(vao);
 	vao.enableAttribBinding(0);
-	vao.bindVertexBuffer(vbo, 0, 0, 2 * sizeof(float), 0);
-	vao.bindVertexFormat(0, 2, GL_FLOAT, GL_FALSE, 0);
+	vao.bindVertexBuffer(0, vbo, 0, 2 * sizeof(float), 0);
+	vao.bindVertexFormat(0, 0, 2, GL_FLOAT, GL_FALSE, 0);
 	vao.bindElementBuffer(ibo);
 
 	prog.use();
@@ -455,14 +260,14 @@ void instancingDemo(engine::Engine & e) {
 		-1.f + dif / 2.f, -1.f + dif
 	};
 	gl::Buffer vbo("Instance Draw VBO");
-	vbo.createStorage(static_cast<unsigned int>(tri.size()) * sizeof(float), 0, tri.data());
+	vbo.createImmutableStorage(static_cast<unsigned int>(tri.size()) * sizeof(float), 0, tri.data());
 
 	// vao
 	gl::VertexArray vao("Multi Draw VAO");
 	glBindVertexArray(vao);
 	vao.enableAttribBinding(0);
-	vao.bindVertexBuffer(vbo, 0, 0, 2 * sizeof(float), 0);
-	vao.bindVertexFormat(0, 2, GL_FLOAT, GL_FALSE, 0);
+	vao.bindVertexBuffer(0, vbo, 0, 2 * sizeof(float), 0);
+	vao.bindVertexFormat(0, 0, 2, GL_FLOAT, GL_FALSE, 0);
 
 	prog.use();
 	prog["col"] = glm::vec3{1.f, 0.f, 0.f};
@@ -483,142 +288,6 @@ void instancingDemo(engine::Engine & e) {
 }
 
 #include "demo.hpp"
-#include "engine/extern/imgui.h"
-
-void updateImgui() {
-	auto & io = ImGui::GetIO();
-	io.MousePos = ImVec2(0, 0);
-	// io.MouseDown[0] = mouse_button_0;
-	// io.KeysDown[i] = ...
-
-	ImGui::NewFrame();
-
-	ImGui::Begin("My window");
-	ImGui::Text("Hello, world.");
-	ImGui::End();
-}
-
-struct GuiData
-{
-	GLuint  fontTex;
-	gl::Buffer  vbo;
-	gl::VertexArray  vao;
-	gl::Program program;
-	GLint   texture_location;
-	GLint   ortho_location;
-	// GLFWwindow* window;
-};
-
-std::unique_ptr<GuiData> m_guiDataPtr;
-
-void ImImpl_RenderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_count)
-{
-	if (cmd_lists_count == 0)
-		return;
-	// TODO save state
-
-	// Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled
-	glEnable(GL_BLEND);
-	glBlendEquation(GL_FUNC_ADD);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
-	glEnable(GL_SCISSOR_TEST);
-	// Setup texture
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_guiDataPtr->fontTex);
-
-	// const float width = ImGui::GetIO().DisplaySize.x;
-	const float height = ImGui::GetIO().DisplaySize.y;
-	// const float ortho_projection[4][4] =
-	// {
-	//     { 2.0f/width, 0.0f, 0.0f, 0.0f },
-	//     { 0.0f, 2.0f/-height, 0.0f, 0.0f },
-	//     { 0.0f, 0.0f, -1.0f, 0.0f },
-	//     { -1.0f, 1.0f, 0.0f, 1.0f },
-	// };
-	// glUseProgram(GuiData.program);
-	// m_guiDataPtr->program.use();
-	// glUniform1i(GuiData.texture_location, 0);
-	// glUniformMatrix4fv(GuiData.ortho_location, 1, GL_FALSE, &ortho_projection[0][0]);
-
-	// Grow our buffer according to what we need
-	size_t total_vtx_count = 0;
-	for (int n = 0; n < cmd_lists_count; n++)
-		total_vtx_count += cmd_lists[n]->vtx_buffer.size();
-
-	// glBindBuffer(GL_ARRAY_BUFFER, GuiData.vbo_handle);
-	// size_t neededBufferSize = total_vtx_count * sizeof(ImDrawVert);
-	// if (neededBufferSize > vbo_max_size) {
-	//     vbo_max_size = neededBufferSize + 5000; // Grow buffer
-	//     glBufferData(GL_ARRAY_BUFFER,
-	//             static_cast<GLsizeiptr>(vbo_max_size), NULL, GL_STREAM_DRAW);
-	// }
-
-	// Copy and convert all vertices into a single contiguous buffer
-	unsigned char* buffer_data = (unsigned char*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-	if (!buffer_data)
-		return;
-	for (int n = 0; n < cmd_lists_count; n++) {
-		const ImDrawList* cmd_list = cmd_lists[n];
-		std::memcpy(buffer_data, &cmd_list->vtx_buffer[0], cmd_list->vtx_buffer.size() * sizeof(ImDrawVert));
-		buffer_data += cmd_list->vtx_buffer.size() * sizeof(ImDrawVert);
-	}
-	glUnmapBuffer(GL_ARRAY_BUFFER);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	// glBindVertexArray(GuiData.vao_handle);
-	int cmd_offset = 0;
-	for (int n = 0; n < cmd_lists_count; n++) {
-		const ImDrawList* cmd_list = cmd_lists[n];
-		int vtx_offset = cmd_offset;
-		for (const auto& pcmd : cmd_list->commands) {
-			glScissor((int)pcmd.clip_rect.x,
-					  (int)(height - pcmd.clip_rect.w),
-					  (int)(pcmd.clip_rect.z - pcmd.clip_rect.x),
-					  (int)(pcmd.clip_rect.w - pcmd.clip_rect.y));
-			glDrawArrays(GL_TRIANGLES, vtx_offset, static_cast<GLsizei>(pcmd.vtx_count));
-			vtx_offset += pcmd.vtx_count;
-		}
-		cmd_offset = vtx_offset;
-	}
-	// Restore modified state
-	glBindVertexArray(0);
-	glUseProgram(0);
-	glDisable(GL_SCISSOR_TEST);
-	glDisable(GL_BLEND);
-	glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-void initImGui(const unsigned int width, const unsigned int height) {
-
-	m_guiDataPtr = std::make_unique<GuiData>();
-
-	gl::Shader vert("shader/gui/gui.vert");
-    gl::Shader frag("shader/gui/gui.frag");
-
-    // GuiData.program = prog;
-    m_guiDataPtr->program.attachShader(vert);
-    m_guiDataPtr->program.attachShader(frag);
-    // m_guiDataPtr->texture_location = glGetUniformLocation(m_guiDataPtr->program, "Texture");
-    // GuiData.ortho_location = glGetUniformLocation(GuiData.program, "ortho");
-    // GuiData.vbo_handle = m_gui_vertex_buffer.get();
-    // GuiData.vao_handle = m_gui_vao.get();
-    // GuiData.window = *this;
-    // GuiData.fontTex = m_gui_font_texture.get();
-
-    // Application init
-	auto & io = ImGui::GetIO();
-	io.DisplaySize.x = width;
-	io.DisplaySize.y = height;
-	io.DeltaTime = 1.0f/60.0f;
-	io.IniFilename = "imgui.ini";
-	unsigned char* pixels;
-	int width2, height2, bytes_per_pixels;
-	io.Fonts->GetTexDataAsRGBA32(&pixels, &width2, &height2, &bytes_per_pixels);
-	io.RenderDrawListsFn = ImImpl_RenderDrawLists;
-	// TODO: Fill others settings of the io structure
-
-}
 
 int main() {
 
@@ -639,13 +308,8 @@ int main() {
 	// // instancingDemo(e);
 
 	Demo demo(width, height);
-	initImGui(width, height);
 	demo.use(Demo::RenderType::MULTIINDEX_CUBE);
-	while (!demo.shouldClose()) {
-		demo.render();
-		updateImgui();
-		ImGui::Render();
-	}
+	while (demo.render());
 
 	return EXIT_SUCCESS;
 

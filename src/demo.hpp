@@ -24,11 +24,9 @@ class Demo {
 
 		Demo(unsigned int, unsigned int);
 
-		void render();
+		bool render();
 
 		void use(RenderType);
-
-		bool shouldClose() const { return m_shouldClose; }
 
 	private:
 
@@ -73,7 +71,5 @@ class Demo {
 
 		std::map<RenderType, std::function<void()>> m_funcs;
 		std::function<void()> m_renderFunc;
-
-		bool m_shouldClose;
 
 };

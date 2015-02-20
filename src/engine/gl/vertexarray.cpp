@@ -27,10 +27,10 @@ void VertexArray::bind() const {
 	glBindVertexArray(m_obj);
 }
 
-bool VertexArray::attribBindingEnabled(const unsigned int bindingIndex) const {
+bool VertexArray::attribBindingEnabled(const unsigned int attribIndex) const {
 	bind();
 	GLint ret;
-	glGetVertexAttribiv(bindingIndex, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &ret);
+	glGetVertexAttribiv(attribIndex, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &ret);
 	return static_cast<bool>(ret);
 }
 
@@ -42,24 +42,20 @@ void VertexArray::bindElementBuffer(const GLuint buffer) const {
 	glVertexArrayElementBuffer(m_obj, buffer);
 }
 
-void VertexArray::bindVertexBuffer(const GLuint buffer, const unsigned int bindingIndex,
+void VertexArray::bindVertexBuffer(const unsigned int bindingIndex, const GLuint buffer,
 		const unsigned int offset, const unsigned int stride, const unsigned int divisor) const {
-	if (!attribBindingEnabled(bindingIndex)) {
-		LOG_WARNING("Binding index " + std::to_string(bindingIndex) + " is not enabled!");
-		return;
-	}
 	glVertexArrayVertexBuffer(m_obj, bindingIndex, buffer, offset, static_cast<GLsizei>(stride));
 	glVertexArrayBindingDivisor(m_obj, bindingIndex, divisor);
 }
 
-void VertexArray::bindVertexFormat(const unsigned int bindingIndex, const unsigned int size,
-		const GLenum type, const bool normalized, const unsigned int offset) const {
-	if (!attribBindingEnabled(bindingIndex)) {
-		LOG_WARNING("Binding index " + std::to_string(bindingIndex) + " is not enabled!");
+void VertexArray::bindVertexFormat(const unsigned int bindingIndex, const unsigned int attribIndex, const unsigned int size,
+		const GLenum type, const bool normalized, const unsigned int relativeOffset) const {
+	if (!attribBindingEnabled(attribIndex)) {
+		LOG_WARNING("Binding index " + std::to_string(attribIndex) + " is not enabled!");
 		return;
 	}
-	glVertexAttribFormat(bindingIndex, static_cast<GLint>(size), type, normalized, offset);
-	glVertexAttribBinding(bindingIndex, bindingIndex);
+	glVertexArrayAttribFormat(m_obj, attribIndex, static_cast<GLint>(size), type, normalized, relativeOffset);
+	glVertexArrayAttribBinding(m_obj, attribIndex, bindingIndex);
 }
 
 } // namespace gl

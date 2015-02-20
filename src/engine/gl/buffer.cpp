@@ -28,8 +28,12 @@ unsigned int Buffer::getSize() const {
 	return static_cast<unsigned int>(ret);
 }
 
-void Buffer::createStorage(const unsigned int size, const GLbitfield flags, const void * data) {
+void Buffer::createImmutableStorage(const unsigned int size, const GLbitfield flags, const void * data) {
 	glNamedBufferStorage(m_obj, size, data, flags);
+}
+
+void Buffer::createMutableStorage(const unsigned int size, const GLbitfield usage, const void * data) {
+	glNamedBufferData(m_obj, size, data, usage);
 }
 
 void Buffer::setData(const unsigned int offset, const unsigned int size, const void * data) {

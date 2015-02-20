@@ -11,11 +11,13 @@ Engine::Engine(const unsigned int width, const unsigned int height,
 
 	initGLFW();
 	m_window = std::make_unique<Window>(width, height, title);
-	m_input = std::make_unique<core::Input>(m_window->getGLFWWindow());
 	glfwSetWindowUserPointer(m_window->getGLFWWindow(), this);
 	initGL();
 
 	if (debugging && glewIsSupported("GL_ARB_debug_output")) initDebugging();
+
+	m_input = std::make_unique<core::Input>(m_window->getGLFWWindow());
+	m_gui = std::make_unique<Gui>(width, height);
 
 	LOG("Engine initialized!");
 

@@ -15,12 +15,17 @@ class Window {
 		~Window();
 
 		GLFWwindow * getGLFWWindow() { return m_win; }
+		unsigned int getWidth() const { return m_width; }
+		unsigned int getHeight() const { return m_height; }
 
 		bool render();
 
 	private:
 
 		GLFWwindow * m_win;
+
+		unsigned int m_width;
+		unsigned int m_height;
 
 };
 

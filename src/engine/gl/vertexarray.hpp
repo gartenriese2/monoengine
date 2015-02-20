@@ -27,10 +27,11 @@ class VertexArray {
 
 		// TO DO: auslagern
 		void bindElementBuffer(GLuint) const;
-		void bindVertexBuffer(GLuint, unsigned int, unsigned int,
-				unsigned int, unsigned int) const;
+		void bindVertexBuffer(unsigned int bindingIndex, GLuint buffer, unsigned int offset,
+				unsigned int stride, unsigned int divisor = 0) const;
 
-		void bindVertexFormat(unsigned int, unsigned int, GLenum, bool, unsigned int) const;
+		void bindVertexFormat(unsigned int bindingIndex, unsigned int attribIndex, unsigned int size,
+				GLenum type, bool normalized, unsigned int relativeOffset) const;
 
 	private:
 

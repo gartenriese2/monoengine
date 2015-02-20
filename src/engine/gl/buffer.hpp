@@ -20,7 +20,8 @@ class Buffer {
 
 		unsigned int getSize() const;
 
-		void createStorage(unsigned int, GLbitfield, const void * = nullptr);
+		void createImmutableStorage(unsigned int, GLbitfield, const void * = nullptr);
+		void createMutableStorage(unsigned int, GLbitfield, const void * = nullptr);
 		void setData(unsigned int, unsigned int, const void *);
 
 		bool isMapped() const;
