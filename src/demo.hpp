@@ -19,7 +19,9 @@ class Demo {
 				BASIC_TRIANGLE, BASIC_CUBE,
 				BASICINDEX_TRIANGLE, BASICINDEX_CUBE,
 				MULTI_TRIANGLE, MULTI_CUBE,
-				MULTIINDEX_TRIANGLE, MULTIINDEX_CUBE
+				MULTIINDEX_TRIANGLE, MULTIINDEX_CUBE,
+				INSTANCE_TRIANGLE, INSTANCE_CUBE,
+				INSTANCEINDEX_TRIANGLE, INSTANCEINDEX_CUBE
 		};
 
 		Demo(unsigned int, unsigned int);
@@ -40,10 +42,12 @@ class Demo {
 		core::Camera m_cam;
 
 		gl::Program m_basicProg;
+		gl::Program m_instanceProg;
 
 		gl::Buffer m_vboTriangle;
 		gl::Buffer m_vboCube;
 		gl::Buffer m_vboCubeIndexed;
+
 		gl::Buffer m_iboTriangle;
 		gl::Buffer m_iboCube;
 		gl::Buffer m_iboMultiTriangle;

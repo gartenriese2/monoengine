@@ -4,12 +4,13 @@
 #include "engine/core/log.hpp"
 #include "engine/extern/imgui.h"
 
-constexpr auto k_numObjectsRoot = 100u;
+constexpr auto k_numObjectsRoot = 10u;
 constexpr auto k_numObjects = k_numObjectsRoot * k_numObjectsRoot;
 
 Demo::Demo(const unsigned int width, const unsigned int height)
-  : m_engine{width, height, "monoEngine Demo"},
+  : m_engine{width, height, "monoEngine Demo", true},
 	m_basicProg{"basic prog"},
+	m_instanceProg{"instance prog"},
 	m_vboTriangle{"vboTriangle"},
 	m_vboCube{"vboCube"},
 	m_vboCubeIndexed{"vboCubeIndexed"},
@@ -22,7 +23,7 @@ Demo::Demo(const unsigned int width, const unsigned int height)
 {
 	m_cam.setRatio(static_cast<float>(width) / static_cast<float>(height));
 	m_cam.setFov(glm::radians(45.f));
-	m_cam.translate({0.f, 0.f, 5.f});
+	m_cam.translate({0.f, 0.f, 8.f});
 
 	initShaders();
 	initBuffers();
@@ -32,12 +33,14 @@ Demo::Demo(const unsigned int width, const unsigned int height)
 
 void Demo::initShaders() {
 	gl::Shader basic_vert("shader/test/basicdraw.vert", "basic_vert");
-	gl::Shader multi_vert("shader/test/multidraw.vert", "multi_vert");
 	gl::Shader instance_vert("shader/test/instancedraw.vert", "instance_vert");
 	gl::Shader frag("shader/test/color.frag", "color_frag");
 
 	m_basicProg.attachShader(basic_vert);
 	m_basicProg.attachShader(frag);
+
+	m_instanceProg.attachShader(instance_vert);
+	m_instanceProg.attachShader(frag);
 }
 
 void Demo::initBuffers() {
@@ -255,8 +258,8 @@ void Demo::initBuffers() {
 	m_multiOffsetsCube.reserve(k_numObjects);
 	m_multiCountsCube.reserve(k_numObjects);
 	for (auto i = 0u; i < k_numObjects; ++i) {
-		m_multiOffsetsCube.emplace_back(i * 108);
-		m_multiCountsCube.emplace_back(108);
+		m_multiOffsetsCube.emplace_back(i * 36);
+		m_multiCountsCube.emplace_back(36);
 	}
 
 	/*
@@ -343,35 +346,35 @@ void Demo::initVAOs() {
 
 	glBindVertexArray(m_vaoTriangle);
 	m_vaoTriangle.enableAttribBinding(0);
-	m_vaoTriangle.bindVertexBuffer(0, m_vboTriangle, 0, 2 * sizeof(float), 0);
+	m_vaoTriangle.bindVertexBuffer(0, m_vboTriangle, 0, 2 * sizeof(float));
 	m_vaoTriangle.bindVertexFormat(0, 0, 2, GL_FLOAT, GL_FALSE, 0);
 
 	glBindVertexArray(m_vaoCube);
 	m_vaoCube.enableAttribBinding(0);
-	m_vaoCube.bindVertexBuffer(0, m_vboCube, 0, 3 * sizeof(float), 0);
+	m_vaoCube.bindVertexBuffer(0, m_vboCube, 0, 3 * sizeof(float));
 	m_vaoCube.bindVertexFormat(0, 0, 3, GL_FLOAT, GL_FALSE, 0);
 
 	glBindVertexArray(m_vaoTriangleIndex);
 	m_vaoTriangleIndex.enableAttribBinding(0);
-	m_vaoTriangleIndex.bindVertexBuffer(0, m_vboTriangle, 0, 2 * sizeof(float), 0);
+	m_vaoTriangleIndex.bindVertexBuffer(0, m_vboTriangle, 0, 2 * sizeof(float));
 	m_vaoTriangleIndex.bindVertexFormat(0, 0, 2, GL_FLOAT, GL_FALSE, 0);
 	m_vaoTriangleIndex.bindElementBuffer(m_iboTriangle);
 
 	glBindVertexArray(m_vaoCubeIndex);
 	m_vaoCubeIndex.enableAttribBinding(0);
-	m_vaoCubeIndex.bindVertexBuffer(0, m_vboCubeIndexed, 0, 3 * sizeof(float), 0);
+	m_vaoCubeIndex.bindVertexBuffer(0, m_vboCubeIndexed, 0, 3 * sizeof(float));
 	m_vaoCubeIndex.bindVertexFormat(0, 0, 3, GL_FLOAT, GL_FALSE, 0);
 	m_vaoCubeIndex.bindElementBuffer(m_iboCube);
 
 	glBindVertexArray(m_vaoTriangleIndexMulti);
 	m_vaoTriangleIndexMulti.enableAttribBinding(0);
-	m_vaoTriangleIndexMulti.bindVertexBuffer(0, m_vboTriangle, 0, 2 * sizeof(float), 0);
+	m_vaoTriangleIndexMulti.bindVertexBuffer(0, m_vboTriangle, 0, 2 * sizeof(float));
 	m_vaoTriangleIndexMulti.bindVertexFormat(0, 0, 2, GL_FLOAT, GL_FALSE, 0);
 	m_vaoTriangleIndexMulti.bindElementBuffer(m_iboMultiTriangle);
 
 	glBindVertexArray(m_vaoCubeIndexMulti);
 	m_vaoCubeIndexMulti.enableAttribBinding(0);
-	m_vaoCubeIndexMulti.bindVertexBuffer(0, m_vboCubeIndexed, 0, 3 * sizeof(float), 0);
+	m_vaoCubeIndexMulti.bindVertexBuffer(0, m_vboCubeIndexed, 0, 3 * sizeof(float));
 	m_vaoCubeIndexMulti.bindVertexFormat(0, 0, 3, GL_FLOAT, GL_FALSE, 0);
 	m_vaoCubeIndexMulti.bindElementBuffer(m_iboMultiCube);
 
@@ -384,7 +387,7 @@ void Demo::initFunctions() {
 		m_basicProg["col"] = glm::vec3{1.f, 0.f, 0.f};
 		m_basicProg["MVP"] = m_cam.getProjMatrix() * m_cam.getViewMatrix();
 
-		glBindVertexArray(m_vaoCubeIndexMulti);
+		glBindVertexArray(m_vaoTriangle);
 		for (auto i = 0u; i < k_numObjects; ++i) {
 			glDrawArrays(GL_TRIANGLES, static_cast<GLint>(i) * 3, 3);
 		}
@@ -395,9 +398,9 @@ void Demo::initFunctions() {
 		m_basicProg["col"] = glm::vec3{1.f, 0.f, 0.f};
 		m_basicProg["MVP"] = m_cam.getProjMatrix() * m_cam.getViewMatrix();
 
-		glBindVertexArray(m_vaoCubeIndexMulti);
+		glBindVertexArray(m_vaoCube);
 		for (auto i = 0u; i < k_numObjects; ++i) {
-			glDrawArrays(GL_TRIANGLES, static_cast<GLint>(i) * 108, 108);
+			glDrawArrays(GL_TRIANGLES, static_cast<GLint>(i) * 36, 36);
 		}
 	});
 
@@ -406,7 +409,7 @@ void Demo::initFunctions() {
 		m_basicProg["col"] = glm::vec3{1.f, 0.f, 0.f};
 		m_basicProg["MVP"] = m_cam.getProjMatrix() * m_cam.getViewMatrix();
 
-		glBindVertexArray(m_vaoCubeIndexMulti);
+		glBindVertexArray(m_vaoTriangleIndex);
 		for (auto i = 0u; i < k_numObjects; ++i) {
 			glDrawElementsBaseVertex(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, 0, static_cast<GLint>(i) * 3);
 		}
@@ -417,7 +420,7 @@ void Demo::initFunctions() {
 		m_basicProg["col"] = glm::vec3{1.f, 0.f, 0.f};
 		m_basicProg["MVP"] = m_cam.getProjMatrix() * m_cam.getViewMatrix();
 
-		glBindVertexArray(m_vaoCubeIndexMulti);
+		glBindVertexArray(m_vaoCubeIndex);
 		for (auto i = 0u; i < k_numObjects; ++i) {
 			glDrawElementsBaseVertex(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0, static_cast<GLint>(i) * 8);
 		}
@@ -428,7 +431,7 @@ void Demo::initFunctions() {
 		m_basicProg["col"] = glm::vec3{1.f, 0.f, 0.f};
 		m_basicProg["MVP"] = m_cam.getProjMatrix() * m_cam.getViewMatrix();
 
-		glBindVertexArray(m_vaoCubeIndexMulti);
+		glBindVertexArray(m_vaoTriangle);
 		glMultiDrawArrays(GL_TRIANGLES, m_multiOffsetsTriangle.data(), m_multiCountsTriangle.data(), k_numObjects);
 	});
 
@@ -437,7 +440,7 @@ void Demo::initFunctions() {
 		m_basicProg["col"] = glm::vec3{1.f, 0.f, 0.f};
 		m_basicProg["MVP"] = m_cam.getProjMatrix() * m_cam.getViewMatrix();
 
-		glBindVertexArray(m_vaoCubeIndexMulti);
+		glBindVertexArray(m_vaoCube);
 		glMultiDrawArrays(GL_TRIANGLES, m_multiOffsetsCube.data(), m_multiCountsCube.data(), k_numObjects);
 	});
 
@@ -446,7 +449,7 @@ void Demo::initFunctions() {
 		m_basicProg["col"] = glm::vec3{1.f, 0.f, 0.f};
 		m_basicProg["MVP"] = m_cam.getProjMatrix() * m_cam.getViewMatrix();
 
-		glBindVertexArray(m_vaoCubeIndexMulti);
+		glBindVertexArray(m_vaoTriangleIndexMulti);
 		glMultiDrawElementsBaseVertex(GL_TRIANGLES, m_multiCountsTriangleIndexed.data(), GL_UNSIGNED_INT,
 				reinterpret_cast<const void * const *>(m_multiOffsetsTriangleIndexed.data()),
 				k_numObjects, m_multiBaseVertexTriangle.data());
@@ -463,6 +466,46 @@ void Demo::initFunctions() {
 				k_numObjects, m_multiBaseVertexCube.data());
 	});
 
+	m_funcs.emplace(RenderType::INSTANCE_TRIANGLE, [&](){
+		m_instanceProg.use();
+		m_instanceProg["col"] = glm::vec3{1.f, 0.f, 0.f};
+		m_instanceProg["MVP"] = m_cam.getProjMatrix() * m_cam.getViewMatrix();
+		m_instanceProg["width"] = k_numObjectsRoot;
+
+		glBindVertexArray(m_vaoTriangle);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 3, k_numObjects);
+	});
+
+	m_funcs.emplace(RenderType::INSTANCE_CUBE, [&](){
+		m_instanceProg.use();
+		m_instanceProg["col"] = glm::vec3{1.f, 0.f, 0.f};
+		m_instanceProg["MVP"] = m_cam.getProjMatrix() * m_cam.getViewMatrix();
+		m_instanceProg["width"] = k_numObjectsRoot;
+
+		glBindVertexArray(m_vaoCube);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 36, k_numObjects);
+	});
+
+	m_funcs.emplace(RenderType::INSTANCEINDEX_TRIANGLE, [&](){
+		m_instanceProg.use();
+		m_instanceProg["col"] = glm::vec3{1.f, 0.f, 0.f};
+		m_instanceProg["MVP"] = m_cam.getProjMatrix() * m_cam.getViewMatrix();
+		m_instanceProg["width"] = k_numObjectsRoot;
+
+		glBindVertexArray(m_vaoTriangleIndex);
+		glDrawElementsInstanced(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, 0, k_numObjects);
+	});
+
+	m_funcs.emplace(RenderType::INSTANCEINDEX_CUBE, [&](){
+		m_instanceProg.use();
+		m_instanceProg["col"] = glm::vec3{1.f, 0.f, 0.f};
+		m_instanceProg["MVP"] = m_cam.getProjMatrix() * m_cam.getViewMatrix();
+		m_instanceProg["width"] = k_numObjectsRoot;
+
+		glBindVertexArray(m_vaoCubeIndex);
+		glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0, k_numObjects);
+	});
+
 }
 
 double Demo::getAverageMs(const std::deque<GLuint64> & deque) {
@@ -476,32 +519,7 @@ double Demo::getAverageMs(const std::deque<GLuint64> & deque) {
 
 void Demo::use(const RenderType type) {
 
-	switch (type) {
-		case RenderType::BASIC_TRIANGLE:
-			m_renderFunc = m_funcs.at(type);
-			break;
-		case RenderType::BASIC_CUBE:
-			m_renderFunc = m_funcs.at(type);
-			break;
-		case RenderType::BASICINDEX_TRIANGLE:
-			m_renderFunc = m_funcs.at(type);
-			break;
-		case RenderType::BASICINDEX_CUBE:
-			m_renderFunc = m_funcs.at(type);
-			break;
-		case RenderType::MULTI_TRIANGLE:
-			m_renderFunc = m_funcs.at(type);
-			break;
-		case RenderType::MULTI_CUBE:
-			m_renderFunc = m_funcs.at(type);
-			break;
-		case RenderType::MULTIINDEX_TRIANGLE:
-			m_renderFunc = m_funcs.at(type);
-			break;
-		case RenderType::MULTIINDEX_CUBE:
-			m_renderFunc = m_funcs.at(type);
-			break;
-	}
+	m_renderFunc = m_funcs.at(type);
 
 }
 
