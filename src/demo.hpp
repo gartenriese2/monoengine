@@ -24,7 +24,7 @@ class Demo {
 				INSTANCEINDEX_TRIANGLE, INSTANCEINDEX_CUBE
 		};
 
-		Demo(unsigned int, unsigned int);
+		Demo(const glm::uvec2 &);
 
 		bool render();
 

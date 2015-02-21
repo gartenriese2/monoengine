@@ -55,4 +55,20 @@ Input::Input(GLFWwindow * const window)
 
 }
 
+void Input::addKeyFunc(const std::function<void(int, int, int, int)> & func) {
+	m_keyFuncs.emplace_back(func);
+}
+
+void Input::addMouseCursorFunc(const std::function<void(double, double)> & func) {
+	m_mouseCursorFuncs.emplace_back(func);
+}
+
+void Input::addMouseButtonFunc(const std::function<void(int, int, int)> & func) {
+	m_mouseButtonFuncs.emplace_back(func);
+}
+
+void Input::addMouseScrollFunc(const std::function<void(double, double)> & func) {
+	m_mouseScrollFuncs.emplace_back(func);
+}
+
 } // namespace core

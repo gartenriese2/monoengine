@@ -7,8 +7,8 @@
 constexpr auto k_numObjectsRoot = 10u;
 constexpr auto k_numObjects = k_numObjectsRoot * k_numObjectsRoot;
 
-Demo::Demo(const unsigned int width, const unsigned int height)
-  : m_engine{width, height, "monoEngine Demo", true},
+Demo::Demo(const glm::uvec2 & size)
+  : m_engine{size, "monoEngine Demo", true},
 	m_basicProg{"basic prog"},
 	m_instanceProg{"instance prog"},
 	m_vboTriangle{"vboTriangle"},
@@ -21,7 +21,7 @@ Demo::Demo(const unsigned int width, const unsigned int height)
 	m_vaoCube{"vaoCube"},
 	m_vaoCubeIndex{"vaoCubeIndex"}
 {
-	m_cam.setRatio(static_cast<float>(width) / static_cast<float>(height));
+	m_cam.setRatio(static_cast<float>(size.x) / static_cast<float>(size.y));
 	m_cam.setFov(glm::radians(45.f));
 	m_cam.translate({0.f, 0.f, 8.f});
 

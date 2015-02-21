@@ -6,18 +6,17 @@
 
 namespace engine {
 
-Engine::Engine(const unsigned int width, const unsigned int height,
-		const std::string & title, const bool debugging) {
+Engine::Engine(const glm::uvec2 & size,	const std::string & title, const bool debugging) {
 
 	initGLFW();
-	m_window = std::make_unique<Window>(width, height, title);
+	m_window = std::make_unique<Window>(size, title);
 	glfwSetWindowUserPointer(m_window->getGLFWWindow(), this);
 	initGL();
 
 	if (debugging && glewIsSupported("GL_ARB_debug_output")) initDebugging();
 
 	m_input = std::make_unique<core::Input>(m_window->getGLFWWindow());
-	m_gui = std::make_unique<Gui>(width, height);
+	m_gui = std::make_unique<Gui>(m_window, m_input);
 
 	LOG("Engine initialized!");
 

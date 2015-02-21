@@ -22,9 +22,6 @@ struct {
 	std::unique_ptr<gl::Buffer> vbo;
 	std::unique_ptr<gl::VertexArray> vao;
 	std::unique_ptr<gl::Program> prog;
-	// GLint texture_location;
-	// GLint ortho_location;
-	// GLFWwindow* window;
 } GuiData;
 
 void renderDrawLists(ImDrawList ** const cmd_lists, const int cmd_lists_count) {
@@ -109,12 +106,29 @@ void renderDrawLists(ImDrawList ** const cmd_lists, const int cmd_lists_count) {
 
 namespace engine {
 
-Gui::Gui(const unsigned int width, const unsigned int height) {
+Gui::Gui(std::unique_ptr<Window> & window, std::unique_ptr<core::Input> & input)
+  : m_window{window},
+	m_input{input},
+	m_mousePos{-1., -1.},
+	m_leftMouseButtonDown{false}
+{
 
 	auto & io = ImGui::GetIO();
-	io.DisplaySize.x = width;
-	io.DisplaySize.y = height;
+	const auto size = m_window->getFrameBufferSize();
+	io.DisplaySize.x = size.x;
+	io.DisplaySize.y = size.y;
 	io.RenderDrawListsFn = renderDrawLists;
+
+	m_input->addMouseCursorFunc([&](const double xpos, const double ypos){
+		m_mousePos = {xpos, ypos};
+	});
+	m_input->addMouseButtonFunc([&](const int button, const int action, const int){
+		if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+			m_leftMouseButtonDown = true;
+		} else {
+			m_leftMouseButtonDown = false;
+		}
+	});
 
 	initFontTexture();
 	initVBO();
@@ -174,8 +188,8 @@ void Gui::initProgram() {
 void Gui::update() {
 
 	auto & io = ImGui::GetIO();
-	io.MousePos = ImVec2(0, 0);
-	// io.MouseDown[0] = mouse_button_0;
+	io.MousePos = ImVec2(static_cast<float>(m_mousePos.x), static_cast<float>(m_mousePos.y));
+	io.MouseDown[0] = m_leftMouseButtonDown;
 	// io.KeysDown[i] = ...
 
 	ImGui::NewFrame();

@@ -13,6 +13,11 @@ class Input {
 
 		Input(GLFWwindow * const);
 
+		void addKeyFunc(const std::function<void(int, int, int, int)> &);
+		void addMouseCursorFunc(const std::function<void(double, double)> &);
+		void addMouseButtonFunc(const std::function<void(int, int, int)> &);
+		void addMouseScrollFunc(const std::function<void(double, double)> &);
+
 	private:
 
 		GLFWwindow * const m_window;

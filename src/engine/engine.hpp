@@ -12,7 +12,7 @@ class Engine {
 
 	public:
 
-		Engine(unsigned int, unsigned int, const std::string &, bool = false);
+		Engine(const glm::uvec2 &, const std::string &, bool = false);
 		~Engine();
 
 		std::unique_ptr<core::Input> & getInputPtr() { return m_input; }
