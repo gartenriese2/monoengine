@@ -29,6 +29,8 @@ class Gui {
 
 		glm::dvec2 m_mousePos;
 		bool m_leftMouseButtonDown;
+		bool m_leftMouseButtonRelease;
+		double m_scrollOffset;
 
 };
 

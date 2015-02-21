@@ -110,7 +110,8 @@ Gui::Gui(std::unique_ptr<Window> & window, std::unique_ptr<core::Input> & input)
   : m_window{window},
 	m_input{input},
 	m_mousePos{-1., -1.},
-	m_leftMouseButtonDown{false}
+	m_leftMouseButtonDown{false},
+	m_leftMouseButtonRelease{false}
 {
 
 	auto & io = ImGui::GetIO();
@@ -125,9 +126,13 @@ Gui::Gui(std::unique_ptr<Window> & window, std::unique_ptr<core::Input> & input)
 	m_input->addMouseButtonFunc([&](const int button, const int action, const int){
 		if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
 			m_leftMouseButtonDown = true;
-		} else {
-			m_leftMouseButtonDown = false;
 		}
+		if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+			m_leftMouseButtonRelease = true;
+		}
+	});
+	m_input->addMouseScrollFunc([&](const double, const double yoffset){
+		m_scrollOffset += yoffset;
 	});
 
 	initFontTexture();
@@ -188,8 +193,18 @@ void Gui::initProgram() {
 void Gui::update() {
 
 	auto & io = ImGui::GetIO();
+
 	io.MousePos = ImVec2(static_cast<float>(m_mousePos.x), static_cast<float>(m_mousePos.y));
+
 	io.MouseDown[0] = m_leftMouseButtonDown;
+	if (m_leftMouseButtonRelease) {
+		m_leftMouseButtonDown = false;
+		m_leftMouseButtonRelease = false;
+	}
+
+	io.MouseWheel += static_cast<float>(m_scrollOffset);
+	m_scrollOffset = 0.0;
+
 	// io.KeysDown[i] = ...
 
 	ImGui::NewFrame();
