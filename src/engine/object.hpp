@@ -11,11 +11,18 @@ class Object {
 		Object();
 
 		const auto & getModelMatrix() const { return m_model; }
+		const auto & getScaleMatrix() const { return m_scale; }
 
 		void move(float, const glm::vec3 &);
 		void moveLocal(float, const glm::vec3 &);
 		void moveTo(const glm::vec3 &);
+		void resetMoves();
+
 		void scale(const glm::vec3 &);
+		void resetScale();
+
+		void rotate(float, const glm::vec3 &);
+		void rotateAround(float, const glm::vec3 &, const glm::vec3 & = {0.f, 0.f, 0.f});
 
 	private:
 
@@ -25,7 +32,6 @@ class Object {
 		glm::mat4 m_rotate;
 		glm::mat4 m_translate;
 
-		glm::vec3 m_originalPosition;
 		glm::vec3 m_actualPosition;
 
 };

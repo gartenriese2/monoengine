@@ -56,9 +56,6 @@ add_definitions( -DGLEW_NO_GLU -DGLEW_STATIC )
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${PROJECT_SOURCE_DIR}/contrib/glm")
 add_definitions( -DGLM_FORCE_RADIANS )
 
-# stb_image
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${PROJECT_SOURCE_DIR}/contrib/imgui")
-
 add_executable(monoEngine ${SRCS} ${HDRS})
 
 target_link_libraries(monoEngine ${GLFW_STATIC_LIB} ${OPENGL_gl_LIBRARY} ${GLFW_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})

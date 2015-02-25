@@ -48,8 +48,9 @@ void VertexArray::bindVertexBuffer(const unsigned int bindingIndex, const GLuint
 	glVertexArrayBindingDivisor(m_obj, bindingIndex, divisor);
 }
 
-void VertexArray::bindVertexFormat(const unsigned int bindingIndex, const unsigned int attribIndex, const unsigned int size,
-		const GLenum type, const bool normalized, const unsigned int relativeOffset) const {
+void VertexArray::bindVertexFormat(const unsigned int bindingIndex, const unsigned int attribIndex,
+		const unsigned int size, const GLenum type, const bool normalized,
+		const unsigned int relativeOffset) const {
 	if (!attribBindingEnabled(attribIndex)) {
 		LOG_WARNING("Binding index " + std::to_string(attribIndex) + " is not enabled!");
 		return;
