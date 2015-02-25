@@ -2,21 +2,18 @@
 
 layout(location = 0) in vec3 pos;
 
+layout(std430, binding = 0) restrict readonly buffer ModelMatrixBuffer {
+  mat4 ModelMatrix[];
+};
+
 in int gl_InstanceID;
 
 out vec3 color;
 
 uniform vec3 col;
-uniform uint width;
-uniform mat4 MVP;
+uniform mat4 ViewProj;
 
 void main() {
-	const int y = gl_InstanceID / int(width);
-	const int x = gl_InstanceID % int(width);
-	const float stepSize = 2.f / float(width);
-	gl_Position = vec4(pos, 1.f);
-	gl_Position.x += x * stepSize;
-	gl_Position.y += y * stepSize;
-	gl_Position *= MVP;
+	gl_Position = ViewProj * ModelMatrix[gl_InstanceID] * vec4(pos, 1.f);
 	color = col;
 }

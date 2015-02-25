@@ -15,6 +15,7 @@ class Engine {
 		Engine(const glm::uvec2 &, const std::string &, bool = false);
 		~Engine();
 
+		std::unique_ptr<Window> & getWindowPtr() { return m_window; }
 		std::unique_ptr<core::Input> & getInputPtr() { return m_input; }
 		std::unique_ptr<Gui> & getGuiPtr() { return m_gui; }
 

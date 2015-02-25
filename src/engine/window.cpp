@@ -1,6 +1,7 @@
 #include "window.hpp"
 
 #include "core/log.hpp"
+#include "engine.hpp"
 
 namespace engine {
 
@@ -18,10 +19,37 @@ Window::Window(const glm::uvec2 & size, const std::string & name)
 	int w, h;
 	glfwGetFramebufferSize(m_win, &w, &h);
 	m_frameBufferSize = {w, h};
+
+	glfwSetWindowSizeCallback(m_win, [](GLFWwindow * winPtr, int width, int height){
+		auto * const win = static_cast<engine::Engine *>(glfwGetWindowUserPointer(winPtr));
+		auto & windowPtr = win->getWindowPtr();
+		windowPtr->m_screenCoordSize = {width, height};
+
+		for (const auto & func : windowPtr->m_windowSizeFuncs) {
+			func(width, height);
+		}
+	});
+	glfwSetFramebufferSizeCallback(m_win, [](GLFWwindow * winPtr, int width, int height){
+		auto * const win = static_cast<engine::Engine *>(glfwGetWindowUserPointer(winPtr));
+		auto & windowPtr = win->getWindowPtr();
+		windowPtr->m_frameBufferSize = {width, height};
+
+		for (const auto & func : windowPtr->m_frameBufferSizeFuncs) {
+			func(width, height);
+		}
+	});
 }
 
 Window::~Window() {
 	glfwDestroyWindow(m_win);
+}
+
+void Window::addWindowSizeFunc(const std::function<void(int, int)> & func) {
+	m_windowSizeFuncs.emplace_back(func);
+}
+
+void Window::addFrameBufferSizeFunc(const std::function<void(int, int)> & func) {
+	m_frameBufferSizeFuncs.emplace_back(func);
 }
 
 bool Window::render() {

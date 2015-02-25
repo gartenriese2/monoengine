@@ -20,6 +20,17 @@ Input::Input(GLFWwindow * const window)
 
 	});
 
+	glfwSetCharCallback(m_window, [](GLFWwindow * windowPtr, unsigned int codepoint){
+
+		auto * const win = static_cast<engine::Engine *>(glfwGetWindowUserPointer(windowPtr));
+		auto & inputPtr = win->getInputPtr();
+
+		for (const auto & func : inputPtr->m_charFuncs) {
+			func(codepoint);
+		}
+
+	});
+
 	glfwSetCursorPosCallback(m_window, [](GLFWwindow * windowPtr, double xpos, double ypos){
 
 		auto * const win = static_cast<engine::Engine *>(glfwGetWindowUserPointer(windowPtr));
@@ -57,6 +68,10 @@ Input::Input(GLFWwindow * const window)
 
 void Input::addKeyFunc(const std::function<void(int, int, int, int)> & func) {
 	m_keyFuncs.emplace_back(func);
+}
+
+void Input::addCharFunc(const std::function<void(unsigned int)> & func) {
+	m_charFuncs.emplace_back(func);
 }
 
 void Input::addMouseCursorFunc(const std::function<void(double, double)> & func) {

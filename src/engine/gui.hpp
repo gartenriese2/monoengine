@@ -4,6 +4,7 @@
 #include "core/input.hpp"
 
 #include <memory>
+#include <map>
 
 namespace engine {
 
@@ -31,6 +32,11 @@ class Gui {
 		bool m_leftMouseButtonDown;
 		bool m_leftMouseButtonRelease;
 		double m_scrollOffset;
+
+		std::map<int, bool> m_keysPressed;
+		std::map<int, bool> m_keysReleased;
+		bool m_controlPressed;
+		bool m_shiftPressed;
 
 };
 

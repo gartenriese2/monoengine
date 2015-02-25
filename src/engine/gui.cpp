@@ -111,7 +111,9 @@ Gui::Gui(std::unique_ptr<Window> & window, std::unique_ptr<core::Input> & input)
 	m_input{input},
 	m_mousePos{-1., -1.},
 	m_leftMouseButtonDown{false},
-	m_leftMouseButtonRelease{false}
+	m_leftMouseButtonRelease{false},
+	m_controlPressed{false},
+	m_shiftPressed{false}
 {
 
 	auto & io = ImGui::GetIO();
@@ -119,6 +121,23 @@ Gui::Gui(std::unique_ptr<Window> & window, std::unique_ptr<core::Input> & input)
 	io.DisplaySize.x = size.x;
 	io.DisplaySize.y = size.y;
 	io.RenderDrawListsFn = renderDrawLists;
+	io.KeyMap[ImGuiKey_Tab] = GLFW_KEY_TAB;
+	io.KeyMap[ImGuiKey_LeftArrow] = GLFW_KEY_LEFT;
+	io.KeyMap[ImGuiKey_RightArrow] = GLFW_KEY_RIGHT;
+	io.KeyMap[ImGuiKey_UpArrow] = GLFW_KEY_UP;
+	io.KeyMap[ImGuiKey_DownArrow] = GLFW_KEY_DOWN;
+	io.KeyMap[ImGuiKey_Home] = GLFW_KEY_HOME;
+	io.KeyMap[ImGuiKey_End] = GLFW_KEY_END;
+	io.KeyMap[ImGuiKey_Delete] = GLFW_KEY_DELETE;
+	io.KeyMap[ImGuiKey_Backspace] = GLFW_KEY_BACKSPACE;
+	io.KeyMap[ImGuiKey_Enter] = GLFW_KEY_ENTER;
+	io.KeyMap[ImGuiKey_Escape] = GLFW_KEY_ESCAPE;
+	io.KeyMap[ImGuiKey_A] = GLFW_KEY_A;
+	io.KeyMap[ImGuiKey_C] = GLFW_KEY_C;
+	io.KeyMap[ImGuiKey_V] = GLFW_KEY_V;
+	io.KeyMap[ImGuiKey_X] = GLFW_KEY_X;
+	io.KeyMap[ImGuiKey_Y] = GLFW_KEY_Y;
+	io.KeyMap[ImGuiKey_Z] = GLFW_KEY_Z;
 
 	m_input->addMouseCursorFunc([&](const double xpos, const double ypos){
 		m_mousePos = {xpos, ypos};
@@ -133,6 +152,25 @@ Gui::Gui(std::unique_ptr<Window> & window, std::unique_ptr<core::Input> & input)
 	});
 	m_input->addMouseScrollFunc([&](const double, const double yoffset){
 		m_scrollOffset += yoffset;
+	});
+	m_input->addKeyFunc([&](const int key, const int, const int action, const int mods){
+		if (action == GLFW_PRESS) {
+			m_keysPressed[key] = true;
+			if ((mods & GLFW_MOD_CONTROL) != 0) {
+				m_controlPressed = true;
+			}
+			if ((mods & GLFW_MOD_SHIFT) != 0) {
+				m_shiftPressed = true;
+			}
+		}
+		if (action == GLFW_RELEASE) {
+			m_keysReleased[key] = true;
+		}
+	});
+	m_input->addCharFunc([](const unsigned int c){
+		if (c > 0 && c < 0x10000) {
+        	ImGui::GetIO().AddInputCharacter(static_cast<unsigned short>(c));
+        }
 	});
 
 	initFontTexture();
@@ -194,6 +232,10 @@ void Gui::update() {
 
 	auto & io = ImGui::GetIO();
 
+	const auto size = m_window->getFrameBufferSize();
+	io.DisplaySize.x = size.x;
+	io.DisplaySize.y = size.y;
+
 	io.MousePos = ImVec2(static_cast<float>(m_mousePos.x), static_cast<float>(m_mousePos.y));
 
 	io.MouseDown[0] = m_leftMouseButtonDown;
@@ -205,7 +247,19 @@ void Gui::update() {
 	io.MouseWheel += static_cast<float>(m_scrollOffset);
 	m_scrollOffset = 0.0;
 
-	// io.KeysDown[i] = ...
+	for (const auto & key : m_keysPressed) {
+		io.KeysDown[key.first] = key.second;
+	}
+	io.KeyCtrl = m_controlPressed;
+	io.KeyShift = m_shiftPressed;
+	for (auto & key : m_keysReleased) {
+		if (key.second) {
+			m_keysPressed[key.first] = false;
+			key.second = false;
+			m_controlPressed = false;
+			m_shiftPressed = false;
+		}
+	}
 
 	ImGui::NewFrame();
 

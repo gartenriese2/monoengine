@@ -4,6 +4,8 @@
 
 #include <string>
 #include <glm/glm.hpp>
+#include <vector>
+#include <functional>
 
 namespace engine {
 
@@ -19,6 +21,9 @@ class Window {
 		const glm::uvec2 getScreenCoordSize() const { return m_screenCoordSize; }
 		const glm::uvec2 getFrameBufferSize() const { return m_frameBufferSize; }
 
+		void addWindowSizeFunc(const std::function<void(int, int)> &);
+		void addFrameBufferSizeFunc(const std::function<void(int, int)> &);
+
 		bool render();
 
 	private:
@@ -27,6 +32,9 @@ class Window {
 
 		glm::uvec2 m_screenCoordSize;
 		glm::uvec2 m_frameBufferSize;
+
+		std::vector<std::function<void(int, int)>> m_windowSizeFuncs;
+		std::vector<std::function<void(int, int)>> m_frameBufferSizeFuncs;
 
 };
 
