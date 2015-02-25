@@ -20,7 +20,7 @@ Timer::Timer(const std::string & name)
 	m_swapped{false}
 {
 	if (m_front == 0 || m_back == 0) {
-		LOG("Error creating Timer!");
+		LOG("Error creating Timer " + name);
 	} else {
 		glObjectLabel(GL_QUERY, m_front, static_cast<GLsizei>(name.size()), name.c_str());
 		glObjectLabel(GL_QUERY, m_back, static_cast<GLsizei>(name.size()), name.c_str());

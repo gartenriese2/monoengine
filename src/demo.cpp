@@ -142,8 +142,9 @@ bool Demo::render() {
 	glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, 0, instances);
 
 	m_timeDeque.emplace_back(m_timer.stop());
+	static auto ms = 0.0;
 	if (m_timeDeque.size() == 100) {
-		const auto ms = getAverageMs(m_timeDeque);
+		ms = getAverageMs(m_timeDeque);
 		m_timeDeque.erase(m_timeDeque.begin(), m_timeDeque.begin() + 50);
 		LOG("Time: " + std::to_string(ms) + " ms");
 	}
@@ -159,7 +160,10 @@ bool Demo::render() {
 		m_numObjects = static_cast<unsigned int>(tmp);
 		setModelMatrices();
 	}
-
+	ImGui::Columns(2, "time", true);
+	ImGui::Text("ms");
+	ImGui::NextColumn();
+	ImGui::Text("%f ms", ms);
 	m_engine.getGuiPtr()->render();
 
 	return m_engine.render();
