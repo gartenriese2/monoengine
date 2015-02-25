@@ -6,6 +6,7 @@
 #include "engine/object.hpp"
 
 constexpr auto k_maxNumObjects = 2000u;
+constexpr auto k_initialNumObjects = 900u;
 
 Demo::Demo(const glm::uvec2 & size)
   : m_engine{size, "monoEngine Demo", true},
@@ -14,7 +15,7 @@ Demo::Demo(const glm::uvec2 & size)
 	m_ibo{"demo ibo"},
 	m_modelMatrixBuffer{"demo ssbo"},
 	m_vao{"demo vao"},
-	m_numObjects{k_maxNumObjects}
+	m_numObjects{k_initialNumObjects}
 {
 	m_cam.setRatio(static_cast<float>(size.x) / static_cast<float>(size.y));
 	m_cam.setFov(glm::radians(45.f));
@@ -143,10 +144,9 @@ bool Demo::render() {
 
 	m_timeDeque.emplace_back(m_timer.stop());
 	static auto ms = 0.0;
-	if (m_timeDeque.size() == 100) {
+	if (m_timeDeque.size() == 10) {
 		ms = getAverageMs(m_timeDeque);
-		m_timeDeque.erase(m_timeDeque.begin(), m_timeDeque.begin() + 50);
-		LOG("Time: " + std::to_string(ms) + " ms");
+		m_timeDeque.erase(m_timeDeque.begin(), m_timeDeque.begin() + 5);
 	}
 
 	// m_cam.translateLocal({0.1f, 0.f, 0.f});
@@ -163,7 +163,12 @@ bool Demo::render() {
 	ImGui::Columns(2, "time", true);
 	ImGui::Text("ms");
 	ImGui::NextColumn();
-	ImGui::Text("%f ms", ms);
+	ImGui::Text("%f", ms);
+	ImGui::NextColumn();
+	ImGui::Text("fps");
+	ImGui::NextColumn();
+	ImGui::Text("%d", static_cast<unsigned int>(1000.0 / ms));
+	ImGui::NextColumn();
 	m_engine.getGuiPtr()->render();
 
 	return m_engine.render();
