@@ -8,7 +8,7 @@
 #include <random>
 
 constexpr auto k_maxNumObjects = 2000u;
-constexpr auto k_initialNumObjects = 10u;
+constexpr auto k_initialNumObjects = 100u;
 constexpr auto k_avg = 20u;
 
 std::default_random_engine generator;
@@ -17,6 +17,9 @@ std::uniform_real_distribution<float> distribution(0.f, 1.f);
 Demo::Demo(const glm::uvec2 & size)
   : m_engine{size, "monoEngine Demo", true},
 	m_prog{"demo prog"},
+	m_fbo{"demo fbo"},
+	m_colorTex{"demo color tex"},
+	m_depthTex{"demo depth tex"},
 	m_vbo{"demo vbo"},
 	m_ibo{"demo ibo"},
 	m_modelMatrixBuffer{"demo ssbo"},
@@ -28,6 +31,14 @@ Demo::Demo(const glm::uvec2 & size)
 	m_cam.translate({0.f, 0.f, 3.f});
 
 	init();
+
+	m_colorTex.createImmutableStorage(size.x, size.y, GL_RGBA32F);
+	m_depthTex.createImmutableStorage(size.x, size.y, GL_DEPTH_COMPONENT32F);
+	m_fbo.attachTexture(GL_COLOR_ATTACHMENT0, m_colorTex, 0);
+	m_fbo.attachTexture(GL_DEPTH_ATTACHMENT, m_depthTex, 0);
+	if (!m_fbo.isComplete(GL_FRAMEBUFFER)) {
+		LOG_WARNING("demo has incomplete fbo!");
+	}
 }
 
 void Demo::init() {
@@ -62,9 +73,9 @@ void Demo::init() {
 		0.f, 0.f, -1.f,
 		-1.f, -1.f, -1.f,
 		0.f, 0.f, -1.f,
-		-1.f, 1.f, 1.f,
+		-1.f, 1.f, -1.f,
 		0.f, 0.f, -1.f,
-		1.f, 1.f, 1.f,
+		1.f, 1.f, -1.f,
 		0.f, 0.f, -1.f,
 
 		1.f, -1.f, 1.f,
@@ -203,21 +214,33 @@ double Demo::getAverageMs(const std::deque<double> & deque) {
 
 bool Demo::render() {
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 
 	m_timer.start();
 
+	// setup shader
 	m_prog.use();
 	m_prog["col"] = glm::vec3{1.f, 0.f, 0.f};
 	m_prog["ViewProj"] = m_cam.getProjMatrix() * m_cam.getViewMatrix();
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_modelMatrixBuffer);
 
+	// draw
+	m_fbo.bind();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	m_fbo.draw({GL_COLOR_ATTACHMENT0});
 	m_vao.bind();
-	const auto instances = static_cast<GLsizei>(m_numObjects * m_numObjects);
-	glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0, instances);
+	glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0,
+			static_cast<GLsizei>(m_numObjects * m_numObjects));
+	m_fbo.unbind();
 
+	const auto size = static_cast<glm::ivec2>(m_engine.getWindowPtr()->getFrameBufferSize());
+	m_fbo.blitAttachment(GL_COLOR_ATTACHMENT0, {0, 0, size.x / 2, size.y / 2});
+	m_fbo.blitAttachment(GL_COLOR_ATTACHMENT0, {size.x / 2, 0, size.x, size.y / 2});
+	m_fbo.blitAttachment(GL_COLOR_ATTACHMENT0, {0, size.y / 2, size.x / 2, size.y});
+	m_fbo.blitAttachment(GL_COLOR_ATTACHMENT0, {size.x / 2, size.y / 2, size.x, size.y});
+
+	// stop timer
 	m_timeDeque.emplace_back(m_timer.stop());
 	static auto ms = 0.0;
 	if (m_timeDeque.size() == k_avg) {
@@ -225,6 +248,7 @@ bool Demo::render() {
 		m_timeDeque.erase(m_timeDeque.begin(), m_timeDeque.begin() + k_avg / 2);
 	}
 
+	// rotate objects
 	const auto start = std::chrono::system_clock::now();
 	for (auto i = 0u; i < m_numObjects * m_numObjects; ++i) {
 		m_objects[i].rotate(0.03f,

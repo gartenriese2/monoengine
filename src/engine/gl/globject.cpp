@@ -56,6 +56,10 @@ GLObject::GLObject(const GLenum type)
 			glCreateQueries(type, 1, &m_handle);
 			m_deleter = [](GLuint & handle){ glDeleteQueries(1, &handle); };
 			break;
+		case GL_FRAMEBUFFER:
+			glCreateFramebuffers(1, &m_handle);
+			m_deleter = [](GLuint & handle){ glDeleteFramebuffers(1, &handle); };
+			break;
 		default:
 			LOG("Unimplemented GLenum!");
 	}

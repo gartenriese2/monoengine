@@ -7,6 +7,7 @@
 #include "engine/gl/vertexarray.hpp"
 #include "engine/gl/timer.hpp"
 #include "engine/object.hpp"
+#include "engine/gl/framebuffer.hpp"
 
 #include <deque>
 #include <vector>
@@ -31,6 +32,10 @@ class Demo {
 		core::Camera m_cam;
 
 		gl::Program m_prog;
+
+		gl::Framebuffer m_fbo;
+		gl::Texture m_colorTex;
+		gl::Texture m_depthTex;
 
 		gl::Buffer m_vbo;
 		gl::Buffer m_ibo;
