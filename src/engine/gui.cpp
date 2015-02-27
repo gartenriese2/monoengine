@@ -21,7 +21,7 @@ struct {
 	std::unique_ptr<gl::Texture> fontTex;
 	std::unique_ptr<gl::Buffer> vbo;
 	std::unique_ptr<gl::VertexArray> vao;
-	std::unique_ptr<gl::Program> prog;
+	GLuint prog;
 } GuiData;
 
 void renderDrawLists(ImDrawList ** const cmd_lists, const int cmd_lists_count) {
@@ -30,7 +30,7 @@ void renderDrawLists(ImDrawList ** const cmd_lists, const int cmd_lists_count) {
 		return;
 	}
 
-	GuiData.prog->use();
+	glUseProgram(GuiData.prog);
 
 	// Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled
 	glEnable(GL_BLEND);
@@ -42,7 +42,6 @@ void renderDrawLists(ImDrawList ** const cmd_lists, const int cmd_lists_count) {
 
 	// Setup texture
 	GuiData.fontTex->bindToTextureUnit(k_fontTexUnit);
-	(*GuiData.prog)["Texture"] = k_fontTexUnit;
 
 	// Setup orthogonal projection matrix
 	const auto width = ImGui::GetIO().DisplaySize.x;
@@ -53,7 +52,8 @@ void renderDrawLists(ImDrawList ** const cmd_lists, const int cmd_lists_count) {
 		{ 0.0f, 0.0f, -1.0f, 0.0f },
 		{ -1.0f, 1.0f, 0.0f, 1.0f },
 	};
-	(*GuiData.prog)["ProjMtx"] = ortho_projection;
+	const auto loc = glGetUniformLocation(GuiData.prog, "ProjMtx");
+	glProgramUniformMatrix4fv(GuiData.prog, loc, 1, GL_FALSE, glm::value_ptr(ortho_projection));
 
 	// Grow our buffer according to what we need
 	size_t total_vtx_count = 0;
@@ -221,11 +221,63 @@ void Gui::initVAO() {
 }
 
 void Gui::initProgram() {
-	GuiData.prog = std::make_unique<gl::Program>("Gui program");
-	gl::Shader vert("shader/gui/gui.vert");
-	gl::Shader frag("shader/gui/gui.frag");
-	GuiData.prog->attachShader(vert);
-	GuiData.prog->attachShader(frag);
+	GuiData.prog = glCreateProgram();
+	{
+		const std::string str = " \
+		#version 450 core\n \
+		layout(location = 0) in vec2 Position;\n \
+		layout(location = 1) in vec2 UV;\n \
+		layout(location = 2) in vec4 Color;\n \
+		out vec2 Frag_UV;\n \
+		out vec4 Frag_Color;\n \
+		uniform mat4 ProjMtx;\n \
+		void main() {\n \
+		   Frag_UV = UV;\n \
+		   Frag_Color = Color;\n \
+		   gl_Position = ProjMtx * vec4(Position.xy, 0.0, 1.0);\n \
+		}";
+		const auto charcode = str.c_str();
+		const auto len = static_cast<GLint>(str.size());
+		auto handle = glCreateShader(GL_VERTEX_SHADER);
+		glShaderSource(handle, 1, &charcode, &len);
+		glCompileShader(handle);
+		auto success = GL_FALSE;
+		glGetShaderiv(handle, GL_COMPILE_STATUS, &success);
+		if (!success) {
+			LOG_ERROR("Could not compile Gui vertex shader");
+		}
+		glAttachShader(GuiData.prog, handle);
+	}
+	{
+		const std::string str = " \
+		#version 450 core\n \
+		layout(location = 0) out vec4 outColor;\n \
+		in vec2 Frag_UV;\n \
+		in vec4 Frag_Color;\n \
+		uniform sampler2D Texture;\n \
+		void main() {\n \
+		   outColor = Frag_Color * texture(Texture, Frag_UV.st);\n \
+		}";
+		const auto charcode = str.c_str();
+		const auto len = static_cast<GLint>(str.size());
+		auto handle = glCreateShader(GL_FRAGMENT_SHADER);
+		glShaderSource(handle, 1, &charcode, &len);
+		glCompileShader(handle);
+		auto success = GL_FALSE;
+		glGetShaderiv(handle, GL_COMPILE_STATUS, &success);
+		if (!success) {
+			LOG_ERROR("Could not compile Gui fragment shader");
+		}
+		glAttachShader(GuiData.prog, handle);
+	}
+	glLinkProgram(GuiData.prog);
+	GLint success = GL_FALSE;
+	glGetProgramiv(GuiData.prog, GL_LINK_STATUS, &success);
+	if (!success) {
+		LOG_ERROR("Could not link Gui program");
+	}
+	const auto loc = glGetUniformLocation(GuiData.prog, "Texture");
+	glProgramUniform1i(GuiData.prog, loc, k_fontTexUnit);
 }
 
 void Gui::update() {

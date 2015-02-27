@@ -7,6 +7,7 @@
 
 namespace gl {
 
+
 Shader::Shader(const std::string & file) {
 	if (!allocate(file)) return;
 	if (!compile(file)) return;
