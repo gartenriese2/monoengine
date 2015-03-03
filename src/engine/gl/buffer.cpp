@@ -22,36 +22,40 @@ Buffer::Buffer(const std::string & name)
 	}
 }
 
-unsigned int Buffer::getSize() const {
+void Buffer::bind(const GLenum target) const {
+	glBindBuffer(target, m_obj);
+}
+
+void Buffer::unbind(const GLenum target) const {
+	glBindBuffer(target, 0);
+}
+
+unsigned int Buffer::getSize(const GLenum target) const {
 	GLint ret;
-	glGetNamedBufferParameteriv(m_obj, GL_BUFFER_SIZE, &ret);
+	glGetBufferParameteriv(target, GL_BUFFER_SIZE, &ret);
 	return static_cast<unsigned int>(ret);
 }
 
-void Buffer::createImmutableStorage(const unsigned int size, const GLbitfield flags, const void * data) {
-	glNamedBufferStorage(m_obj, size, data, flags);
+void Buffer::createMutableStorage(const GLenum target, const unsigned int size, const GLbitfield usage, const void * data) {
+	glBufferData(target, size, data, usage);
 }
 
-void Buffer::createMutableStorage(const unsigned int size, const GLbitfield usage, const void * data) {
-	glNamedBufferData(m_obj, size, data, usage);
+void Buffer::setData(const GLenum target, const unsigned int offset, const unsigned int size, const void * data) {
+	glBufferSubData(target, offset, size, data);
 }
 
-void Buffer::setData(const unsigned int offset, const unsigned int size, const void * data) {
-	glNamedBufferSubData(m_obj, offset, size, data);
-}
-
-bool Buffer::isMapped() const {
+bool Buffer::isMapped(const GLenum target) const {
 	GLint ret;
-	glGetNamedBufferParameteriv(m_obj, GL_BUFFER_MAPPED, &ret);
+	glGetBufferParameteriv(target, GL_BUFFER_MAPPED, &ret);
 	return static_cast<bool>(ret);
 }
 
-void * Buffer::map(const unsigned int offset, const unsigned int size, const GLbitfield access) {
-	return glMapNamedBufferRange(m_obj, offset, size, access);
+void * Buffer::map(const GLenum target, const unsigned int offset, const unsigned int size, const GLbitfield access) {
+	return glMapBufferRange(target, offset, size, access);
 }
 
-bool Buffer::unmap() const {
-	return glUnmapNamedBuffer(m_obj);
+bool Buffer::unmap(const GLenum target) const {
+	return glUnmapBuffer(target);
 }
 
 } // namespace gl

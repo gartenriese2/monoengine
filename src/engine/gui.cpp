@@ -42,6 +42,8 @@ void renderDrawLists(ImDrawList ** const cmd_lists, const int cmd_lists_count) {
 
 	// Setup texture
 	GuiData.fontTex->bindToTextureUnit(k_fontTexUnit);
+	auto loc = glGetUniformLocation(GuiData.prog, "Texture");
+	glUniform1i(loc, k_fontTexUnit);
 
 	// Setup orthogonal projection matrix
 	const auto width = ImGui::GetIO().DisplaySize.x;
@@ -52,10 +54,11 @@ void renderDrawLists(ImDrawList ** const cmd_lists, const int cmd_lists_count) {
 		{ 0.0f, 0.0f, -1.0f, 0.0f },
 		{ -1.0f, 1.0f, 0.0f, 1.0f },
 	};
-	const auto loc = glGetUniformLocation(GuiData.prog, "ProjMtx");
-	glProgramUniformMatrix4fv(GuiData.prog, loc, 1, GL_FALSE, glm::value_ptr(ortho_projection));
+	loc = glGetUniformLocation(GuiData.prog, "ProjMtx");
+	glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(ortho_projection));
 
 	// Grow our buffer according to what we need
+	GuiData.vbo->bind(GL_ARRAY_BUFFER);
 	size_t total_vtx_count = 0;
 	for (auto n = 0; n < cmd_lists_count; ++n) {
 		total_vtx_count += cmd_lists[n]->vtx_buffer.size();
@@ -63,11 +66,11 @@ void renderDrawLists(ImDrawList ** const cmd_lists, const int cmd_lists_count) {
 	auto neededBufferSize = total_vtx_count * sizeof(ImDrawVert);
 	if (neededBufferSize > s_maxVBOSize) {
 		s_maxVBOSize = static_cast<unsigned int>(neededBufferSize) + 5000; // Grow buffer
-		GuiData.vbo->createMutableStorage(s_maxVBOSize, GL_STREAM_DRAW);
+		GuiData.vbo->createMutableStorage(GL_ARRAY_BUFFER, s_maxVBOSize, GL_STREAM_DRAW);
 	}
 
 	// Copy and convert all vertices into a single contiguous buffer
-	unsigned char * buffer_data = static_cast<unsigned char *>(GuiData.vbo->map(0, GuiData.vbo->getSize(), GL_MAP_WRITE_BIT));
+	unsigned char * buffer_data = static_cast<unsigned char *>(GuiData.vbo->map(GL_ARRAY_BUFFER, 0, GuiData.vbo->getSize(GL_ARRAY_BUFFER), GL_MAP_WRITE_BIT));
 	if (!buffer_data) {
 		return;
 	}
@@ -76,9 +79,10 @@ void renderDrawLists(ImDrawList ** const cmd_lists, const int cmd_lists_count) {
 		std::memcpy(buffer_data, &cmd_list->vtx_buffer[0], cmd_list->vtx_buffer.size() * sizeof(ImDrawVert));
 		buffer_data += cmd_list->vtx_buffer.size() * sizeof(ImDrawVert);
 	}
-	GuiData.vbo->unmap();
+	GuiData.vbo->unmap(GL_ARRAY_BUFFER);
+	GuiData.vbo->unbind(GL_ARRAY_BUFFER);
 
-	glBindVertexArray(*GuiData.vao);
+	GuiData.vao->bind();
 	int cmd_offset = 0;
 	for (int n = 0; n < cmd_lists_count; n++) {
 		const ImDrawList* cmd_list = cmd_lists[n];
@@ -193,12 +197,14 @@ void Gui::initFontTexture() {
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
 	GuiData.fontTex = std::make_unique<gl::Texture>("Gui Font Texture");
+	GuiData.fontTex->bind();
 	GuiData.fontTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	GuiData.fontTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	GuiData.fontTex->createImmutableStorage(static_cast<unsigned int>(width),
 			static_cast<unsigned int>(height), GL_RGBA32F);
 	GuiData.fontTex->fillSubImage(0, 0, 0, static_cast<unsigned int>(width),
 			static_cast<unsigned int>(height), GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	GuiData.fontTex->unbind();
 
 	io.Fonts->TexID = static_cast<void *>(GuiData.fontTex->getHandlePtr());
 
@@ -206,11 +212,15 @@ void Gui::initFontTexture() {
 
 void Gui::initVBO() {
 	GuiData.vbo = std::make_unique<gl::Buffer>("Gui VBO");
-	GuiData.vbo->createMutableStorage(s_maxVBOSize, GL_DYNAMIC_DRAW);
+	GuiData.vbo->bind(GL_ARRAY_BUFFER);
+	GuiData.vbo->createMutableStorage(GL_ARRAY_BUFFER, s_maxVBOSize, GL_DYNAMIC_DRAW);
+	GuiData.vbo->unbind(GL_ARRAY_BUFFER);
 }
 
 void Gui::initVAO() {
 	GuiData.vao = std::make_unique<gl::VertexArray>("Gui VAO");
+	GuiData.vao->bind();
+	GuiData.vbo->bind(GL_ARRAY_BUFFER);
 	GuiData.vao->bindVertexBuffer(0, *GuiData.vbo, 0, sizeof(ImDrawVert));
 	GuiData.vao->enableAttribBinding(0);
 	GuiData.vao->bindVertexFormat(0, 0, 2, GL_FLOAT, GL_FALSE, offsetof(ImDrawVert, pos));
@@ -218,13 +228,15 @@ void Gui::initVAO() {
 	GuiData.vao->bindVertexFormat(0, 1, 2, GL_FLOAT, GL_FALSE, offsetof(ImDrawVert, uv));
 	GuiData.vao->enableAttribBinding(2);
 	GuiData.vao->bindVertexFormat(0, 2, 4, GL_UNSIGNED_BYTE, GL_TRUE, offsetof(ImDrawVert, col));
+	GuiData.vbo->unbind(GL_ARRAY_BUFFER);
+	GuiData.vao->unbind();
 }
 
 void Gui::initProgram() {
 	GuiData.prog = glCreateProgram();
 	{
 		const std::string str = " \
-		#version 450 core\n \
+		#version 330 core\n \
 		layout(location = 0) in vec2 Position;\n \
 		layout(location = 1) in vec2 UV;\n \
 		layout(location = 2) in vec4 Color;\n \
@@ -250,7 +262,7 @@ void Gui::initProgram() {
 	}
 	{
 		const std::string str = " \
-		#version 450 core\n \
+		#version 330 core\n \
 		layout(location = 0) out vec4 outColor;\n \
 		in vec2 Frag_UV;\n \
 		in vec4 Frag_Color;\n \
@@ -276,8 +288,6 @@ void Gui::initProgram() {
 	if (!success) {
 		LOG_ERROR("Could not link Gui program");
 	}
-	const auto loc = glGetUniformLocation(GuiData.prog, "Texture");
-	glProgramUniform1i(GuiData.prog, loc, k_fontTexUnit);
 }
 
 void Gui::update() {

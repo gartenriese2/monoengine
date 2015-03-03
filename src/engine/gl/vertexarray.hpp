@@ -21,12 +21,12 @@ class VertexArray {
 		operator GLuint() const { return m_obj; }
 
 		void bind() const;
+		void unbind() const;
 
 		bool attribBindingEnabled(unsigned int) const;
 		void enableAttribBinding(unsigned int) const;
 
 		// TO DO: auslagern
-		void bindElementBuffer(GLuint) const;
 		void bindVertexBuffer(unsigned int bindingIndex, GLuint buffer, unsigned int offset,
 				unsigned int stride, unsigned int divisor = 0) const;
 

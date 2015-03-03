@@ -1,13 +1,11 @@
-#version 450 core
+#version 330 core
 
 layout(location = 0) in vec3 pos;
 layout(location = 1) in vec3 norm;
 
-layout(std430, binding = 0) restrict readonly buffer ModelMatrixBuffer {
-  mat4 ModelMatrix[];
+layout(std140) uniform ModelMatrixBuffer {
+  mat4 ModelMatrix[2500];
 };
-
-in int gl_InstanceID;
 
 out vec3 color;
 

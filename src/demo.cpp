@@ -7,8 +7,8 @@
 #include <chrono>
 #include <random>
 
-constexpr auto k_maxNumObjects = 2000u;
-constexpr auto k_initialNumObjects = 100u;
+constexpr auto k_maxNumObjects = 50u;
+constexpr auto k_initialNumObjects = 5u;
 constexpr auto k_avg = 20u;
 
 std::default_random_engine generator;
@@ -32,13 +32,17 @@ Demo::Demo(const glm::uvec2 & size)
 
 	init();
 
+	m_colorTex.bind();
 	m_colorTex.createImmutableStorage(size.x, size.y, GL_RGBA32F);
+	m_depthTex.bind();
 	m_depthTex.createImmutableStorage(size.x, size.y, GL_DEPTH_COMPONENT32F);
-	m_fbo.attachTexture(GL_COLOR_ATTACHMENT0, m_colorTex, 0);
-	m_fbo.attachTexture(GL_DEPTH_ATTACHMENT, m_depthTex, 0);
+	m_fbo.bind();
+	m_fbo.attachTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_colorTex, 0);
+	m_fbo.attachTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthTex, 0);
 	if (!m_fbo.isComplete(GL_FRAMEBUFFER)) {
 		LOG_WARNING("demo has incomplete fbo!");
 	}
+	m_fbo.unbind();
 }
 
 void Demo::init() {
@@ -105,7 +109,10 @@ void Demo::init() {
 		1.f, -1.f, 1.f,
 		0.f, -1.f, 0.f
 	};
-	m_vbo.createImmutableStorage(static_cast<unsigned int>(vec.size()) * sizeof(GLfloat), 0, vec.data());
+	m_vbo.bind(GL_ARRAY_BUFFER);
+	m_vbo.createMutableStorage(GL_ARRAY_BUFFER, static_cast<unsigned int>(vec.size()) * sizeof(GLfloat), 
+			GL_STATIC_DRAW, vec.data());
+	m_vbo.unbind(GL_ARRAY_BUFFER);
 
 	// ibo
 	std::vector<GLushort> idx = {
@@ -127,16 +134,23 @@ void Demo::init() {
 		20, 21, 22,
 		22, 23, 20
 	};
-	m_ibo.createImmutableStorage(static_cast<unsigned int>(vec.size()) * sizeof(GLushort), 0, idx.data());
+	m_ibo.bind(GL_ARRAY_BUFFER);
+	m_ibo.createMutableStorage(GL_ARRAY_BUFFER, static_cast<unsigned int>(vec.size()) * sizeof(GLushort),
+			GL_STATIC_DRAW, idx.data());
+	m_ibo.unbind(GL_ARRAY_BUFFER);
 
 	// vao
 	m_vao.bind();
+	m_vbo.bind(GL_ARRAY_BUFFER);
 	m_vao.enableAttribBinding(0);
 	m_vao.enableAttribBinding(1);
 	m_vao.bindVertexBuffer(0, m_vbo, 0, 6 * sizeof(GLfloat));
 	m_vao.bindVertexFormat(0, 0, 3, GL_FLOAT, GL_FALSE, 0);
 	m_vao.bindVertexFormat(0, 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat));
-	m_vao.bindElementBuffer(m_ibo);
+	m_ibo.bind(GL_ELEMENT_ARRAY_BUFFER);
+	m_vao.unbind();
+	m_vbo.unbind(GL_ARRAY_BUFFER);
+	m_ibo.unbind(GL_ELEMENT_ARRAY_BUFFER);
 
 	// keys
 	m_engine.getInputPtr()->addKeyFunc([&](const int key, const int, const int action, const int mods){
@@ -160,12 +174,13 @@ void Demo::init() {
 	});
 
 	// modelMatrixBuffer
-	m_modelMatrixBuffer.createImmutableStorage(k_maxNumObjects * k_maxNumObjects * sizeof(glm::mat4),
-			GL_MAP_WRITE_BIT | GL_DYNAMIC_STORAGE_BIT);
+	m_modelMatrixBuffer.bind(GL_UNIFORM_BUFFER);
+	m_modelMatrixBuffer.createMutableStorage(GL_UNIFORM_BUFFER, k_maxNumObjects * k_maxNumObjects * sizeof(glm::mat4),
+			GL_DYNAMIC_DRAW);
 	m_objects.resize(k_maxNumObjects * k_maxNumObjects);
 	orderModels();
 	setModelMatrices();
-
+	m_modelMatrixBuffer.unbind(GL_UNIFORM_BUFFER);
 }
 
 void Demo::orderModels() {
@@ -183,7 +198,7 @@ void Demo::orderModels() {
 }
 
 void Demo::setModelMatrices() {
-	void * voidPtr = m_modelMatrixBuffer.map(0, m_numObjects * m_numObjects, GL_MAP_WRITE_BIT);
+	void * voidPtr = m_modelMatrixBuffer.map(GL_UNIFORM_BUFFER, 0, m_numObjects * m_numObjects, GL_MAP_WRITE_BIT);
 	auto * ptr = reinterpret_cast<glm::mat4 *>(voidPtr);
 	auto count = 0u;
 	for (const auto & obj : m_objects) {
@@ -191,7 +206,7 @@ void Demo::setModelMatrices() {
 		++ptr;
 		if (++count > m_numObjects * m_numObjects) break;
 	}
-	m_modelMatrixBuffer.unmap();
+	m_modelMatrixBuffer.unmap(GL_UNIFORM_BUFFER);
 }
 
 double Demo::getAverageMs(const std::deque<GLuint64> & deque) {
@@ -223,7 +238,10 @@ bool Demo::render() {
 	m_prog.use();
 	m_prog["col"] = glm::vec3{1.f, 0.f, 0.f};
 	m_prog["ViewProj"] = m_cam.getProjMatrix() * m_cam.getViewMatrix();
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_modelMatrixBuffer);
+
+	// ubo
+	const auto index = glGetUniformBlockIndex(static_cast<GLuint>(m_prog), "ModelMatrixBuffer");
+	glBindBufferBase(GL_UNIFORM_BUFFER, index, m_modelMatrixBuffer);
 
 	// draw
 	m_fbo.bind();
@@ -232,13 +250,16 @@ bool Demo::render() {
 	m_vao.bind();
 	glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0,
 			static_cast<GLsizei>(m_numObjects * m_numObjects));
+	m_vao.unbind();
 	m_fbo.unbind();
-
+	m_fbo.bind(GL_READ_FRAMEBUFFER);
+	glDrawBuffer(GL_BACK);
 	const auto size = static_cast<glm::ivec2>(m_engine.getWindowPtr()->getFrameBufferSize());
-	m_fbo.blitAttachment(GL_COLOR_ATTACHMENT0, {0, 0, size.x / 2, size.y / 2});
-	m_fbo.blitAttachment(GL_COLOR_ATTACHMENT0, {size.x / 2, 0, size.x, size.y / 2});
-	m_fbo.blitAttachment(GL_COLOR_ATTACHMENT0, {0, size.y / 2, size.x / 2, size.y});
-	m_fbo.blitAttachment(GL_COLOR_ATTACHMENT0, {size.x / 2, size.y / 2, size.x, size.y});
+	m_fbo.blitAttachment(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, {0, 0, size.x / 2, size.y / 2});
+	m_fbo.blitAttachment(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, {size.x / 2, 0, size.x, size.y / 2});
+	m_fbo.blitAttachment(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, {0, size.y / 2, size.x / 2, size.y});
+	m_fbo.blitAttachment(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, {size.x / 2, size.y / 2, size.x, size.y});
+	m_fbo.unbind(GL_READ_FRAMEBUFFER);
 
 	// stop timer
 	m_timeDeque.emplace_back(m_timer.stop());
@@ -255,7 +276,9 @@ bool Demo::render() {
 				{distribution(generator), distribution(generator), distribution(generator)});
 		m_objects[i].rotateAround(0.01f, {0.f, 1.f, 0.f});
 	}
+	m_modelMatrixBuffer.bind(GL_UNIFORM_BUFFER);
 	setModelMatrices();
+	m_modelMatrixBuffer.unbind(GL_UNIFORM_BUFFER);
 	std::chrono::duration<double> tmp = std::chrono::system_clock::now() - start;
 	m_cpuTimeDeque.emplace_back(tmp.count() * 1000.0);
 	static auto ms_cpu = 0.0;
@@ -271,7 +294,9 @@ bool Demo::render() {
 	if (m_numObjects != static_cast<unsigned int>(numObj)) {
 		m_numObjects = static_cast<unsigned int>(numObj);
 		orderModels();
+		m_modelMatrixBuffer.bind(GL_UNIFORM_BUFFER);
 		setModelMatrices();
+		m_modelMatrixBuffer.unbind(GL_UNIFORM_BUFFER);
 	}
 	ImGui::Columns(2, "time", true);
 	ImGui::Text("ms gpu");

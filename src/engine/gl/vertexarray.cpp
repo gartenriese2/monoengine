@@ -27,6 +27,10 @@ void VertexArray::bind() const {
 	glBindVertexArray(m_obj);
 }
 
+void VertexArray::unbind() const {
+	glBindVertexArray(0);
+}
+
 bool VertexArray::attribBindingEnabled(const unsigned int attribIndex) const {
 	bind();
 	GLint ret;
@@ -35,17 +39,13 @@ bool VertexArray::attribBindingEnabled(const unsigned int attribIndex) const {
 }
 
 void VertexArray::enableAttribBinding(const unsigned int bindingIndex) const {
-	glEnableVertexArrayAttrib(m_obj, bindingIndex);
-}
-
-void VertexArray::bindElementBuffer(const GLuint buffer) const {
-	glVertexArrayElementBuffer(m_obj, buffer);
+	glEnableVertexAttribArray(bindingIndex);
 }
 
 void VertexArray::bindVertexBuffer(const unsigned int bindingIndex, const GLuint buffer,
 		const unsigned int offset, const unsigned int stride, const unsigned int divisor) const {
-	glVertexArrayVertexBuffer(m_obj, bindingIndex, buffer, offset, static_cast<GLsizei>(stride));
-	glVertexArrayBindingDivisor(m_obj, bindingIndex, divisor);
+	glBindVertexBuffer(bindingIndex, buffer, offset, static_cast<GLsizei>(stride));
+	glVertexBindingDivisor(bindingIndex, divisor);
 }
 
 void VertexArray::bindVertexFormat(const unsigned int bindingIndex, const unsigned int attribIndex,
@@ -55,8 +55,8 @@ void VertexArray::bindVertexFormat(const unsigned int bindingIndex, const unsign
 		LOG_WARNING("Binding index " + std::to_string(attribIndex) + " is not enabled!");
 		return;
 	}
-	glVertexArrayAttribFormat(m_obj, attribIndex, static_cast<GLint>(size), type, normalized, relativeOffset);
-	glVertexArrayAttribBinding(m_obj, attribIndex, bindingIndex);
+	glVertexAttribFormat(attribIndex, static_cast<GLint>(size), type, normalized, relativeOffset);
+	glVertexAttribBinding(attribIndex, bindingIndex);
 }
 
 } // namespace gl

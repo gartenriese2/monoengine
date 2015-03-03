@@ -21,6 +21,9 @@ class Texture {
 		operator GLuint() const { return m_obj; }
 		GLuint * getHandlePtr() { return m_obj.getHandlePtr(); } // imgui needs this
 
+		void bind() const;
+		void unbind() const;
+
 		void createImmutableStorage(unsigned int, unsigned int, GLenum, unsigned int = 1) const;
 		void fill(const void *) const; // TO DO
 		void fillSubImage(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int,

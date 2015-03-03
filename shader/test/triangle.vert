@@ -1,4 +1,4 @@
-#version 450 core
+#version 330 core
 
 /*layout(std430, binding = 0) restrict readonly buffer VertexBlock {
     float vertexData[];
