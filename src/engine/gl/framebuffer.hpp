@@ -25,23 +25,24 @@ class Framebuffer {
 		void bind(GLenum = GL_FRAMEBUFFER) const;
 		void unbind(GLenum = GL_FRAMEBUFFER) const;
 
-		GLint getParameter(GLenum, GLenum) const;
-		void setParameter(GLenum, GLenum, GLint) const;
-		GLint getAttachmentParameter(GLenum, GLenum, GLenum) const;
-		const glm::ivec2 getAttachmentSize(GLenum, GLenum) const;
+		GLint getParameter(GLenum) const;
+		void setParameter(GLenum, GLint) const;
+		GLint getAttachmentParameter(GLenum, GLenum) const;
+		const glm::ivec2 getAttachmentSize(GLenum) const;
 
-		void attachTexture(GLenum, GLenum, const gl::Texture &, GLint) const;
+		void attachTexture(GLenum, const gl::Texture &, GLint) const;
 
-		bool isComplete(GLenum) const;
+		bool isComplete() const;
 
 		void read(GLenum) const;
 		void draw(const std::vector<GLenum> &) const;
 		void blit(const glm::ivec4 &, const glm::ivec4 &, GLbitfield, GLenum) const;
-		void blitAttachment(GLenum, GLenum, const glm::ivec4 &) const;
+		void blitAttachment(GLenum, const glm::ivec4 &) const;
 
 	private:
 
 		GLObject m_obj;
+		mutable GLenum m_target;
 
 };
 

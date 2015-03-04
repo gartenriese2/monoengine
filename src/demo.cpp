@@ -7,9 +7,10 @@
 #include <chrono>
 #include <random>
 
-constexpr auto k_maxNumObjects = 50u;
+constexpr auto k_maxNumObjects = 10u;
 constexpr auto k_initialNumObjects = 5u;
 constexpr auto k_avg = 20u;
+constexpr auto k_uboBinding = 0u;
 
 std::default_random_engine generator;
 std::uniform_real_distribution<float> distribution(0.f, 1.f);
@@ -28,7 +29,7 @@ Demo::Demo(const glm::uvec2 & size)
 {
 	m_cam.setRatio(static_cast<float>(size.x) / static_cast<float>(size.y));
 	m_cam.setFov(glm::radians(45.f));
-	m_cam.translate({0.f, 0.f, 3.f});
+	m_cam.translate({0.f, 0.f, 5.f});
 
 	init();
 
@@ -37,9 +38,9 @@ Demo::Demo(const glm::uvec2 & size)
 	m_depthTex.bind();
 	m_depthTex.createImmutableStorage(size.x, size.y, GL_DEPTH_COMPONENT32F);
 	m_fbo.bind();
-	m_fbo.attachTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_colorTex, 0);
-	m_fbo.attachTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthTex, 0);
-	if (!m_fbo.isComplete(GL_FRAMEBUFFER)) {
+	m_fbo.attachTexture(GL_COLOR_ATTACHMENT0, m_colorTex, 0);
+	m_fbo.attachTexture(GL_DEPTH_ATTACHMENT, m_depthTex, 0);
+	if (!m_fbo.isComplete()) {
 		LOG_WARNING("demo has incomplete fbo!");
 	}
 	m_fbo.unbind();
@@ -175,11 +176,19 @@ void Demo::init() {
 
 	// modelMatrixBuffer
 	m_modelMatrixBuffer.bind(GL_UNIFORM_BUFFER);
-	m_modelMatrixBuffer.createMutableStorage(GL_UNIFORM_BUFFER, k_maxNumObjects * k_maxNumObjects * sizeof(glm::mat4),
+	std::vector<glm::mat4> mvec;
+	glm::mat4 m(1.f);
+	mvec.emplace_back(m);
+	mvec.emplace_back(m);
+	mvec.emplace_back(m);
+	mvec.emplace_back(m);
+	m_modelMatrixBuffer.createMutableStorage(GL_UNIFORM_BUFFER, static_cast<unsigned int>(mvec.size())  * sizeof(glm::mat4),
+			GL_STATIC_DRAW, mvec.data());
+	/*m_modelMatrixBuffer.createMutableStorage(GL_UNIFORM_BUFFER, k_maxNumObjects * k_maxNumObjects * sizeof(glm::mat4),
 			GL_DYNAMIC_DRAW);
 	m_objects.resize(k_maxNumObjects * k_maxNumObjects);
 	orderModels();
-	setModelMatrices();
+	setModelMatrices();*/
 	m_modelMatrixBuffer.unbind(GL_UNIFORM_BUFFER);
 }
 
@@ -241,7 +250,9 @@ bool Demo::render() {
 
 	// ubo
 	const auto index = glGetUniformBlockIndex(static_cast<GLuint>(m_prog), "ModelMatrixBuffer");
-	glBindBufferBase(GL_UNIFORM_BUFFER, index, m_modelMatrixBuffer);
+	glUniformBlockBinding(static_cast<GLuint>(m_prog), index, k_uboBinding);
+	m_modelMatrixBuffer.bind(GL_UNIFORM_BUFFER);
+	glBindBufferBase(GL_UNIFORM_BUFFER, k_uboBinding, m_modelMatrixBuffer);
 
 	// draw
 	m_fbo.bind();
@@ -252,13 +263,13 @@ bool Demo::render() {
 			static_cast<GLsizei>(m_numObjects * m_numObjects));
 	m_vao.unbind();
 	m_fbo.unbind();
+
+	//m_modelMatrixBuffer.unbind(GL_UNIFORM_BUFFER);
+
 	m_fbo.bind(GL_READ_FRAMEBUFFER);
 	glDrawBuffer(GL_BACK);
 	const auto size = static_cast<glm::ivec2>(m_engine.getWindowPtr()->getFrameBufferSize());
-	m_fbo.blitAttachment(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, {0, 0, size.x / 2, size.y / 2});
-	m_fbo.blitAttachment(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, {size.x / 2, 0, size.x, size.y / 2});
-	m_fbo.blitAttachment(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, {0, size.y / 2, size.x / 2, size.y});
-	m_fbo.blitAttachment(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, {size.x / 2, size.y / 2, size.x, size.y});
+	m_fbo.blitAttachment(GL_COLOR_ATTACHMENT0, {0, 0, size.x, size.y});
 	m_fbo.unbind(GL_READ_FRAMEBUFFER);
 
 	// stop timer
@@ -271,14 +282,14 @@ bool Demo::render() {
 
 	// rotate objects
 	const auto start = std::chrono::system_clock::now();
-	for (auto i = 0u; i < m_numObjects * m_numObjects; ++i) {
+	/*for (auto i = 0u; i < m_numObjects * m_numObjects; ++i) {
 		m_objects[i].rotate(0.03f,
 				{distribution(generator), distribution(generator), distribution(generator)});
 		m_objects[i].rotateAround(0.01f, {0.f, 1.f, 0.f});
 	}
 	m_modelMatrixBuffer.bind(GL_UNIFORM_BUFFER);
 	setModelMatrices();
-	m_modelMatrixBuffer.unbind(GL_UNIFORM_BUFFER);
+	m_modelMatrixBuffer.unbind(GL_UNIFORM_BUFFER);*/
 	std::chrono::duration<double> tmp = std::chrono::system_clock::now() - start;
 	m_cpuTimeDeque.emplace_back(tmp.count() * 1000.0);
 	static auto ms_cpu = 0.0;
