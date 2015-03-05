@@ -7,6 +7,11 @@
 
 namespace gl {
 
+Shader::Shader(const GLenum type)
+  : m_obj{type}
+{
+
+}
 
 Shader::Shader(const std::string & file) {
 	if (!allocate(file)) return;
@@ -34,6 +39,47 @@ auto Shader::getCode(const std::string & file) const {
 	}
 	stream.close();
 	return code;
+
+}
+
+void Shader::addSourceFromString(const std::string & str) {
+	m_source.append(str);
+}
+
+void Shader::addSourceFromFile(const std::string & file) {
+	m_source.append(getCode(file));
+}
+
+bool Shader::compileSource() const {
+
+	const auto charcode = m_source.c_str();
+	const auto len = static_cast<GLint>(m_source.size());
+
+	glShaderSource(m_obj, 1, &charcode, &len);
+	glCompileShader(m_obj);
+
+	auto success = GL_FALSE;
+	glGetShaderiv(m_obj, GL_COMPILE_STATUS, &success);
+
+	if (!success) {
+
+		auto logSize = GLint{};
+		glGetShaderiv(m_obj, GL_INFO_LOG_LENGTH, &logSize);
+
+		std::vector<char> tmp;
+		tmp.reserve(static_cast<size_t>(logSize));
+		glGetShaderInfoLog(m_obj, logSize, NULL, &tmp[0]);
+
+		if (tmp.size() > 0) {
+			LOG("Shader compiling failed with the following error:\n", &tmp[0]);
+		} else {
+			LOG("Shader compiling failed.");
+		}
+		return false;
+
+	}
+
+	return true;
 
 }
 

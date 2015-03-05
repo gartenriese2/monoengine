@@ -10,6 +10,7 @@ class Shader {
 
 	public:
 
+		Shader(GLenum);
 		Shader(const std::string &);
 		Shader(const std::string &, const std::string &);
 		Shader(const Shader &) = delete;
@@ -20,6 +21,10 @@ class Shader {
 
 		operator GLuint() const { return m_obj; }
 
+		void addSourceFromString(const std::string &);
+		void addSourceFromFile(const std::string &);
+		bool compileSource() const;
+
 	private:
 
 		auto getCode(const std::string &) const;
@@ -27,6 +32,8 @@ class Shader {
 		bool compile(const std::string &);
 
 		GLObject m_obj;
+
+		std::string m_source;
 
 };
 

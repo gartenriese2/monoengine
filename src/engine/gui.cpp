@@ -78,7 +78,7 @@ void renderDrawLists(ImDrawList ** const cmd_lists, const int cmd_lists_count) {
 	}
 	GuiData.vbo->unmap();
 
-	glBindVertexArray(*GuiData.vao);
+	GuiData.vao->bind();
 	int cmd_offset = 0;
 	for (int n = 0; n < cmd_lists_count; n++) {
 		const ImDrawList* cmd_list = cmd_lists[n];

@@ -22,7 +22,7 @@ class Demo {
 
 	private:
 
-		void init();
+		void init(const glm::uvec2 &);
 		void orderModels();
 		void setModelMatrices();
 		double getAverageMs(const std::deque<GLuint64> &);

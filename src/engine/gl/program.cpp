@@ -78,7 +78,8 @@ bool Program::link() {
 	for (auto i = GLuint{}; i < static_cast<GLuint>(numUniforms); ++i) {
 
 		glGetActiveUniform(m_obj, i, maxLength, &length, &size, &type, buffer.get());
-		m_uniforms.emplace(std::string(buffer.get()), i);
+		const auto loc = glGetUniformLocation(m_obj, buffer.get());
+		if (loc != -1) m_uniforms.emplace(std::string(buffer.get()), loc);
 
 	}
 

@@ -11,7 +11,6 @@ in int gl_InstanceID;
 
 out vec3 color;
 
-uniform vec3 col;
 uniform mat4 ViewProj;
 
 void main() {

@@ -7,8 +7,8 @@
 #include <chrono>
 #include <random>
 
-constexpr auto k_maxNumObjects = 2000u;
-constexpr auto k_initialNumObjects = 100u;
+constexpr auto k_maxNumObjects = 400u;
+constexpr auto k_initialNumObjects = 32u;
 constexpr auto k_avg = 20u;
 
 std::default_random_engine generator;
@@ -26,22 +26,14 @@ Demo::Demo(const glm::uvec2 & size)
 	m_vao{"demo vao"},
 	m_numObjects{k_initialNumObjects}
 {
+	init(size);
+}
+
+void Demo::init(const glm::uvec2 & size) {
+
 	m_cam.setRatio(static_cast<float>(size.x) / static_cast<float>(size.y));
 	m_cam.setFov(glm::radians(45.f));
 	m_cam.translate({0.f, 0.f, 3.f});
-
-	init();
-
-	m_colorTex.createImmutableStorage(size.x, size.y, GL_RGBA32F);
-	m_depthTex.createImmutableStorage(size.x, size.y, GL_DEPTH_COMPONENT32F);
-	m_fbo.attachTexture(GL_COLOR_ATTACHMENT0, m_colorTex, 0);
-	m_fbo.attachTexture(GL_DEPTH_ATTACHMENT, m_depthTex, 0);
-	if (!m_fbo.isComplete(GL_FRAMEBUFFER)) {
-		LOG_WARNING("demo has incomplete fbo!");
-	}
-}
-
-void Demo::init() {
 
 	// shader
 	gl::Shader vert("shader/test/instancedraw.vert", "instance_vert");
@@ -166,6 +158,14 @@ void Demo::init() {
 	orderModels();
 	setModelMatrices();
 
+	m_colorTex.createImmutableStorage(size.x, size.y, GL_RGBA32F);
+	m_depthTex.createImmutableStorage(size.x, size.y, GL_DEPTH_COMPONENT32F);
+	m_fbo.attachTexture(GL_COLOR_ATTACHMENT0, m_colorTex, 0);
+	m_fbo.attachTexture(GL_DEPTH_ATTACHMENT, m_depthTex, 0);
+	if (!m_fbo.isComplete(GL_FRAMEBUFFER)) {
+		LOG_WARNING("demo has incomplete fbo!");
+	}
+
 }
 
 void Demo::orderModels() {
@@ -235,10 +235,7 @@ bool Demo::render() {
 	m_fbo.unbind();
 
 	const auto size = static_cast<glm::ivec2>(m_engine.getWindowPtr()->getFrameBufferSize());
-	m_fbo.blitAttachment(GL_COLOR_ATTACHMENT0, {0, 0, size.x / 2, size.y / 2});
-	m_fbo.blitAttachment(GL_COLOR_ATTACHMENT0, {size.x / 2, 0, size.x, size.y / 2});
-	m_fbo.blitAttachment(GL_COLOR_ATTACHMENT0, {0, size.y / 2, size.x / 2, size.y});
-	m_fbo.blitAttachment(GL_COLOR_ATTACHMENT0, {size.x / 2, size.y / 2, size.x, size.y});
+	m_fbo.blitAttachment(GL_COLOR_ATTACHMENT0, {0, 0, size.x, size.y});
 
 	// stop timer
 	m_timeDeque.emplace_back(m_timer.stop());
