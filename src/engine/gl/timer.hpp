@@ -11,7 +11,6 @@ class Timer {
 	public:
 
 		Timer();
-		Timer(const std::string &);
 		Timer(const Timer &) = delete;
 		Timer(Timer &&) = default;
 		Timer & operator=(const Timer &) = delete;

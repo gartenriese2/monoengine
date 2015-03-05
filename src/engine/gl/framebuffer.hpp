@@ -13,7 +13,6 @@ class Framebuffer {
 	public:
 
 		Framebuffer();
-		Framebuffer(const std::string &);
 		Framebuffer(const Framebuffer &) = delete;
 		Framebuffer(Framebuffer &&) = default;
 		Framebuffer & operator=(const Framebuffer &) = delete;
@@ -23,7 +22,7 @@ class Framebuffer {
 		operator GLuint() const { return m_obj; }
 
 		void bind(GLenum = GL_FRAMEBUFFER) const;
-		void unbind(GLenum = GL_FRAMEBUFFER) const;
+		void unbind() const;
 
 		GLint getParameter(GLenum) const;
 		void setParameter(GLenum, GLint) const;

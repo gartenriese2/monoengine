@@ -66,11 +66,11 @@ void renderDrawLists(ImDrawList ** const cmd_lists, const int cmd_lists_count) {
 	auto neededBufferSize = total_vtx_count * sizeof(ImDrawVert);
 	if (neededBufferSize > s_maxVBOSize) {
 		s_maxVBOSize = static_cast<unsigned int>(neededBufferSize) + 5000; // Grow buffer
-		GuiData.vbo->createMutableStorage(GL_ARRAY_BUFFER, s_maxVBOSize, GL_STREAM_DRAW);
+		GuiData.vbo->createMutableStorage(s_maxVBOSize, GL_STREAM_DRAW);
 	}
 
 	// Copy and convert all vertices into a single contiguous buffer
-	unsigned char * buffer_data = static_cast<unsigned char *>(GuiData.vbo->map(GL_ARRAY_BUFFER, 0, GuiData.vbo->getSize(GL_ARRAY_BUFFER), GL_MAP_WRITE_BIT));
+	unsigned char * buffer_data = static_cast<unsigned char *>(GuiData.vbo->map(0, GuiData.vbo->getSize(), GL_MAP_WRITE_BIT));
 	if (!buffer_data) {
 		return;
 	}
@@ -79,8 +79,8 @@ void renderDrawLists(ImDrawList ** const cmd_lists, const int cmd_lists_count) {
 		std::memcpy(buffer_data, &cmd_list->vtx_buffer[0], cmd_list->vtx_buffer.size() * sizeof(ImDrawVert));
 		buffer_data += cmd_list->vtx_buffer.size() * sizeof(ImDrawVert);
 	}
-	GuiData.vbo->unmap(GL_ARRAY_BUFFER);
-	GuiData.vbo->unbind(GL_ARRAY_BUFFER);
+	GuiData.vbo->unmap();
+	GuiData.vbo->unbind();
 
 	GuiData.vao->bind();
 	int cmd_offset = 0;
@@ -196,7 +196,7 @@ void Gui::initFontTexture() {
 	int width, height;
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
-	GuiData.fontTex = std::make_unique<gl::Texture>("Gui Font Texture");
+	GuiData.fontTex = std::make_unique<gl::Texture>();
 	GuiData.fontTex->bind();
 	GuiData.fontTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	GuiData.fontTex->setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -211,14 +211,14 @@ void Gui::initFontTexture() {
 }
 
 void Gui::initVBO() {
-	GuiData.vbo = std::make_unique<gl::Buffer>("Gui VBO");
+	GuiData.vbo = std::make_unique<gl::Buffer>();
 	GuiData.vbo->bind(GL_ARRAY_BUFFER);
-	GuiData.vbo->createMutableStorage(GL_ARRAY_BUFFER, s_maxVBOSize, GL_DYNAMIC_DRAW);
-	GuiData.vbo->unbind(GL_ARRAY_BUFFER);
+	GuiData.vbo->createMutableStorage(s_maxVBOSize, GL_DYNAMIC_DRAW);
+	GuiData.vbo->unbind();
 }
 
 void Gui::initVAO() {
-	GuiData.vao = std::make_unique<gl::VertexArray>("Gui VAO");
+	GuiData.vao = std::make_unique<gl::VertexArray>();
 	GuiData.vao->bind();
 	GuiData.vbo->bind(GL_ARRAY_BUFFER);
 	GuiData.vao->bindVertexBuffer(0, *GuiData.vbo, 0, sizeof(ImDrawVert));
@@ -228,7 +228,7 @@ void Gui::initVAO() {
 	GuiData.vao->bindVertexFormat(0, 1, 2, GL_FLOAT, GL_FALSE, offsetof(ImDrawVert, uv));
 	GuiData.vao->enableAttribBinding(2);
 	GuiData.vao->bindVertexFormat(0, 2, 4, GL_UNSIGNED_BYTE, GL_TRUE, offsetof(ImDrawVert, col));
-	GuiData.vbo->unbind(GL_ARRAY_BUFFER);
+	GuiData.vbo->unbind();
 	GuiData.vao->unbind();
 }
 

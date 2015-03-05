@@ -5,57 +5,50 @@
 namespace gl {
 
 Buffer::Buffer()
-  : m_obj{GL_BUFFER}
+  : m_obj{GL_BUFFER},
+	m_target{GL_NONE}
 {
 	if (m_obj == 0) {
 		LOG("Error creating Buffer!");
 	}
 }
 
-Buffer::Buffer(const std::string & name)
-  : m_obj{GL_BUFFER}
-{
-	if (m_obj == 0) {
-		LOG("Error creating Buffer " + name);
-	} else {
-		glObjectLabel(GL_BUFFER, m_obj, static_cast<GLsizei>(name.size()), name.c_str());
-	}
-}
-
 void Buffer::bind(const GLenum target) const {
 	glBindBuffer(target, m_obj);
+	m_target = target;
 }
 
-void Buffer::unbind(const GLenum target) const {
-	glBindBuffer(target, 0);
+void Buffer::unbind() const {
+	glBindBuffer(m_target, 0);
+	m_target = GL_NONE;
 }
 
-unsigned int Buffer::getSize(const GLenum target) const {
+unsigned int Buffer::getSize() const {
 	GLint ret;
-	glGetBufferParameteriv(target, GL_BUFFER_SIZE, &ret);
+	glGetBufferParameteriv(m_target, GL_BUFFER_SIZE, &ret);
 	return static_cast<unsigned int>(ret);
 }
 
-void Buffer::createMutableStorage(const GLenum target, const unsigned int size, const GLbitfield usage, const void * data) {
-	glBufferData(target, size, data, usage);
+void Buffer::createMutableStorage(const unsigned int size, const GLbitfield usage, const void * data) {
+	glBufferData(m_target, size, data, usage);
 }
 
-void Buffer::setData(const GLenum target, const unsigned int offset, const unsigned int size, const void * data) {
-	glBufferSubData(target, offset, size, data);
+void Buffer::setData(const unsigned int offset, const unsigned int size, const void * data) {
+	glBufferSubData(m_target, offset, size, data);
 }
 
-bool Buffer::isMapped(const GLenum target) const {
+bool Buffer::isMapped() const {
 	GLint ret;
-	glGetBufferParameteriv(target, GL_BUFFER_MAPPED, &ret);
+	glGetBufferParameteriv(m_target, GL_BUFFER_MAPPED, &ret);
 	return static_cast<bool>(ret);
 }
 
-void * Buffer::map(const GLenum target, const unsigned int offset, const unsigned int size, const GLbitfield access) {
-	return glMapBufferRange(target, offset, size, access);
+void * Buffer::map(const unsigned int offset, const unsigned int size, const GLbitfield access) {
+	return glMapBufferRange(m_target, offset, size, access);
 }
 
-bool Buffer::unmap(const GLenum target) const {
-	return glUnmapBuffer(target);
+bool Buffer::unmap() const {
+	return glUnmapBuffer(m_target);
 }
 
 } // namespace gl

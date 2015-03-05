@@ -13,24 +13,13 @@ Framebuffer::Framebuffer()
 	}
 }
 
-Framebuffer::Framebuffer(const std::string & name)
-  : m_obj{GL_FRAMEBUFFER},
-	m_target{GL_NONE}
-{
-	if (m_obj == 0) {
-		LOG("Error creating Framebuffer " + name);
-	} else {
-		glObjectLabel(GL_FRAMEBUFFER, m_obj, static_cast<GLsizei>(name.size()), name.c_str());
-	}
-}
-
 void Framebuffer::bind(const GLenum target) const {
 	glBindFramebuffer(target, m_obj);
 	m_target = target;
 }
 
-void Framebuffer::unbind(const GLenum target) const {
-	glBindFramebuffer(target, 0);
+void Framebuffer::unbind() const {
+	glBindFramebuffer(m_target, 0);
 	m_target = GL_NONE;
 }
 

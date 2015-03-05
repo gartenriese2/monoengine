@@ -9,7 +9,6 @@ class Buffer {
 	public:
 
 		Buffer();
-		Buffer(const std::string &);
 		Buffer(const Buffer &) = delete;
 		Buffer(Buffer &&) = default;
 		Buffer & operator=(const Buffer &) = delete;
@@ -19,20 +18,21 @@ class Buffer {
 		operator GLuint() const { return m_obj; }
 
 		void bind(GLenum) const;
-		void unbind(GLenum) const;
+		void unbind() const;
 
-		unsigned int getSize(GLenum) const;
+		unsigned int getSize() const;
 
-		void createMutableStorage(GLenum, unsigned int, GLbitfield, const void * = nullptr);
-		void setData(GLenum, unsigned int, unsigned int, const void *);
+		void createMutableStorage(unsigned int, GLbitfield, const void * = nullptr);
+		void setData(unsigned int, unsigned int, const void *);
 
-		bool isMapped(GLenum) const;
-		void * map(GLenum, unsigned int, unsigned int, GLbitfield);
-		bool unmap(GLenum) const;
+		bool isMapped() const;
+		void * map(unsigned int, unsigned int, GLbitfield);
+		bool unmap() const;
 
 	private:
 
 		GLObject m_obj;
+		mutable GLenum m_target;
 
 };
 

@@ -14,7 +14,6 @@ class Program {
  	public:
 
 		Program();
-		Program(const std::string &);
 		Program(const Program &) = delete;
 		Program(Program &&) = default;
 		Program & operator=(const Program &) = delete;

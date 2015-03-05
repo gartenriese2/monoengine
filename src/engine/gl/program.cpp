@@ -16,16 +16,6 @@ Program::Program()
 	}
 }
 
-Program::Program(const std::string & name)
-  : m_obj{GL_PROGRAM}
-{
-	if (m_obj == 0) {
-		LOG("Error creating Program " + name);
-	} else {
-		glObjectLabel(GL_PROGRAM, m_obj, static_cast<GLsizei>(name.size()), name.c_str());
-	}
-}
-
 Uniform Program::operator[](const std::string & name) const {
 
 	auto it = m_uniforms.find(name);
@@ -78,7 +68,8 @@ bool Program::link() {
 	for (auto i = GLuint{}; i < static_cast<GLuint>(numUniforms); ++i) {
 
 		glGetActiveUniform(m_obj, i, maxLength, &length, &size, &type, buffer.get());
-		m_uniforms.emplace(std::string(buffer.get()), i);
+		const auto loc = glGetUniformLocation(m_obj, buffer.get());
+		if (loc != -1) m_uniforms.emplace(std::string(buffer.get()), loc);
 
 	}
 

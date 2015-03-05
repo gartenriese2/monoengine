@@ -7,7 +7,6 @@
 #include <chrono>
 #include <random>
 
-constexpr auto k_maxNumObjects = 10u;
 constexpr auto k_initialNumObjects = 5u;
 constexpr auto k_avg = 20u;
 constexpr auto k_uboBinding = 0u;
@@ -17,40 +16,30 @@ std::uniform_real_distribution<float> distribution(0.f, 1.f);
 
 Demo::Demo(const glm::uvec2 & size)
   : m_engine{size, "monoEngine Demo", true},
-	m_prog{"demo prog"},
-	m_fbo{"demo fbo"},
-	m_colorTex{"demo color tex"},
-	m_depthTex{"demo depth tex"},
-	m_vbo{"demo vbo"},
-	m_ibo{"demo ibo"},
-	m_modelMatrixBuffer{"demo ssbo"},
-	m_vao{"demo vao"},
 	m_numObjects{k_initialNumObjects}
 {
+	init(size);
+}
+
+void Demo::init(const glm::uvec2 & size) {
+
 	m_cam.setRatio(static_cast<float>(size.x) / static_cast<float>(size.y));
 	m_cam.setFov(glm::radians(45.f));
 	m_cam.translate({0.f, 0.f, 5.f});
 
-	init();
-
-	m_colorTex.bind();
-	m_colorTex.createImmutableStorage(size.x, size.y, GL_RGBA32F);
-	m_depthTex.bind();
-	m_depthTex.createImmutableStorage(size.x, size.y, GL_DEPTH_COMPONENT32F);
-	m_fbo.bind();
-	m_fbo.attachTexture(GL_COLOR_ATTACHMENT0, m_colorTex, 0);
-	m_fbo.attachTexture(GL_DEPTH_ATTACHMENT, m_depthTex, 0);
-	if (!m_fbo.isComplete()) {
-		LOG_WARNING("demo has incomplete fbo!");
-	}
-	m_fbo.unbind();
-}
-
-void Demo::init() {
-
 	// shader
-	gl::Shader vert("shader/test/instancedraw.vert", "instance_vert");
-	gl::Shader frag("shader/test/color.frag", "color_frag");
+	GLint maxBufferSize;
+	glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxBufferSize);
+	maxBufferSize /= sizeof(glm::mat4);
+	m_maxNumObjects = static_cast<unsigned int>(std::sqrt(maxBufferSize));
+	gl::Shader vert(GL_VERTEX_SHADER);
+	vert.addSourceFromString("#version 330 core\n");
+	vert.addSourceFromString("const int NUM_MATRICES = " + std::to_string(maxBufferSize) + ";\n");
+	vert.addSourceFromFile("shader/test/instancedraw.vert");
+	if (!vert.compileSource()) {
+		LOG_ERROR("could not compile vertex shader!");
+	}
+	gl::Shader frag("shader/test/color.frag");
 	m_prog.attachShader(vert);
 	m_prog.attachShader(frag);
 
@@ -111,9 +100,9 @@ void Demo::init() {
 		0.f, -1.f, 0.f
 	};
 	m_vbo.bind(GL_ARRAY_BUFFER);
-	m_vbo.createMutableStorage(GL_ARRAY_BUFFER, static_cast<unsigned int>(vec.size()) * sizeof(GLfloat), 
+	m_vbo.createMutableStorage(static_cast<unsigned int>(vec.size()) * sizeof(GLfloat),
 			GL_STATIC_DRAW, vec.data());
-	m_vbo.unbind(GL_ARRAY_BUFFER);
+	m_vbo.unbind();
 
 	// ibo
 	std::vector<GLushort> idx = {
@@ -136,9 +125,9 @@ void Demo::init() {
 		22, 23, 20
 	};
 	m_ibo.bind(GL_ARRAY_BUFFER);
-	m_ibo.createMutableStorage(GL_ARRAY_BUFFER, static_cast<unsigned int>(vec.size()) * sizeof(GLushort),
+	m_ibo.createMutableStorage(static_cast<unsigned int>(vec.size()) * sizeof(GLushort),
 			GL_STATIC_DRAW, idx.data());
-	m_ibo.unbind(GL_ARRAY_BUFFER);
+	m_ibo.unbind();
 
 	// vao
 	m_vao.bind();
@@ -150,8 +139,8 @@ void Demo::init() {
 	m_vao.bindVertexFormat(0, 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat));
 	m_ibo.bind(GL_ELEMENT_ARRAY_BUFFER);
 	m_vao.unbind();
-	m_vbo.unbind(GL_ARRAY_BUFFER);
-	m_ibo.unbind(GL_ELEMENT_ARRAY_BUFFER);
+	m_vbo.unbind();
+	m_ibo.unbind();
 
 	// keys
 	m_engine.getInputPtr()->addKeyFunc([&](const int key, const int, const int action, const int mods){
@@ -176,20 +165,24 @@ void Demo::init() {
 
 	// modelMatrixBuffer
 	m_modelMatrixBuffer.bind(GL_UNIFORM_BUFFER);
-	std::vector<glm::mat4> mvec;
-	glm::mat4 m(1.f);
-	mvec.emplace_back(m);
-	mvec.emplace_back(m);
-	mvec.emplace_back(m);
-	mvec.emplace_back(m);
-	m_modelMatrixBuffer.createMutableStorage(GL_UNIFORM_BUFFER, static_cast<unsigned int>(mvec.size())  * sizeof(glm::mat4),
-			GL_STATIC_DRAW, mvec.data());
-	/*m_modelMatrixBuffer.createMutableStorage(GL_UNIFORM_BUFFER, k_maxNumObjects * k_maxNumObjects * sizeof(glm::mat4),
+	m_modelMatrixBuffer.createMutableStorage(m_maxNumObjects * m_maxNumObjects * sizeof(glm::mat4),
 			GL_DYNAMIC_DRAW);
-	m_objects.resize(k_maxNumObjects * k_maxNumObjects);
+	m_objects.resize(m_maxNumObjects * m_maxNumObjects);
 	orderModels();
-	setModelMatrices();*/
-	m_modelMatrixBuffer.unbind(GL_UNIFORM_BUFFER);
+	setModelMatrices();
+	m_modelMatrixBuffer.unbind();
+
+	m_colorTex.bind();
+	m_colorTex.createImmutableStorage(size.x, size.y, GL_RGBA32F);
+	m_depthTex.bind();
+	m_depthTex.createImmutableStorage(size.x, size.y, GL_DEPTH_COMPONENT32F);
+	m_fbo.bind();
+	m_fbo.attachTexture(GL_COLOR_ATTACHMENT0, m_colorTex, 0);
+	m_fbo.attachTexture(GL_DEPTH_ATTACHMENT, m_depthTex, 0);
+	if (!m_fbo.isComplete()) {
+		LOG_WARNING("demo has incomplete fbo!");
+	}
+	m_fbo.unbind();
 }
 
 void Demo::orderModels() {
@@ -207,7 +200,7 @@ void Demo::orderModels() {
 }
 
 void Demo::setModelMatrices() {
-	void * voidPtr = m_modelMatrixBuffer.map(GL_UNIFORM_BUFFER, 0, m_numObjects * m_numObjects, GL_MAP_WRITE_BIT);
+	void * voidPtr = m_modelMatrixBuffer.map(0, m_numObjects * m_numObjects, GL_MAP_WRITE_BIT);
 	auto * ptr = reinterpret_cast<glm::mat4 *>(voidPtr);
 	auto count = 0u;
 	for (const auto & obj : m_objects) {
@@ -215,7 +208,7 @@ void Demo::setModelMatrices() {
 		++ptr;
 		if (++count > m_numObjects * m_numObjects) break;
 	}
-	m_modelMatrixBuffer.unmap(GL_UNIFORM_BUFFER);
+	m_modelMatrixBuffer.unmap();
 }
 
 double Demo::getAverageMs(const std::deque<GLuint64> & deque) {
@@ -251,7 +244,6 @@ bool Demo::render() {
 	// ubo
 	const auto index = glGetUniformBlockIndex(static_cast<GLuint>(m_prog), "ModelMatrixBuffer");
 	glUniformBlockBinding(static_cast<GLuint>(m_prog), index, k_uboBinding);
-	m_modelMatrixBuffer.bind(GL_UNIFORM_BUFFER);
 	glBindBufferBase(GL_UNIFORM_BUFFER, k_uboBinding, m_modelMatrixBuffer);
 
 	// draw
@@ -264,13 +256,11 @@ bool Demo::render() {
 	m_vao.unbind();
 	m_fbo.unbind();
 
-	//m_modelMatrixBuffer.unbind(GL_UNIFORM_BUFFER);
-
 	m_fbo.bind(GL_READ_FRAMEBUFFER);
 	glDrawBuffer(GL_BACK);
 	const auto size = static_cast<glm::ivec2>(m_engine.getWindowPtr()->getFrameBufferSize());
 	m_fbo.blitAttachment(GL_COLOR_ATTACHMENT0, {0, 0, size.x, size.y});
-	m_fbo.unbind(GL_READ_FRAMEBUFFER);
+	m_fbo.unbind();
 
 	// stop timer
 	m_timeDeque.emplace_back(m_timer.stop());
@@ -282,14 +272,14 @@ bool Demo::render() {
 
 	// rotate objects
 	const auto start = std::chrono::system_clock::now();
-	/*for (auto i = 0u; i < m_numObjects * m_numObjects; ++i) {
+	for (auto i = 0u; i < m_numObjects * m_numObjects; ++i) {
 		m_objects[i].rotate(0.03f,
 				{distribution(generator), distribution(generator), distribution(generator)});
 		m_objects[i].rotateAround(0.01f, {0.f, 1.f, 0.f});
 	}
 	m_modelMatrixBuffer.bind(GL_UNIFORM_BUFFER);
 	setModelMatrices();
-	m_modelMatrixBuffer.unbind(GL_UNIFORM_BUFFER);*/
+	m_modelMatrixBuffer.unbind();
 	std::chrono::duration<double> tmp = std::chrono::system_clock::now() - start;
 	m_cpuTimeDeque.emplace_back(tmp.count() * 1000.0);
 	static auto ms_cpu = 0.0;
@@ -301,13 +291,13 @@ bool Demo::render() {
 	// Gui
 	m_engine.getGuiPtr()->update();
 	int numObj = static_cast<int>(m_numObjects);
-	ImGui::SliderInt("numObjects", &numObj, 1, k_maxNumObjects);
+	ImGui::SliderInt("numObjects", &numObj, 1, static_cast<int>(m_maxNumObjects));
 	if (m_numObjects != static_cast<unsigned int>(numObj)) {
 		m_numObjects = static_cast<unsigned int>(numObj);
 		orderModels();
 		m_modelMatrixBuffer.bind(GL_UNIFORM_BUFFER);
 		setModelMatrices();
-		m_modelMatrixBuffer.unbind(GL_UNIFORM_BUFFER);
+		m_modelMatrixBuffer.unbind();
 	}
 	ImGui::Columns(2, "time", true);
 	ImGui::Text("ms gpu");

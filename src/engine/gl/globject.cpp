@@ -32,24 +32,20 @@ GLObject::GLObject(const GLenum type)
 			break;
 		case GL_BUFFER:
 			glGenBuffers(1, &m_handle);
+			glBindBuffer(GL_ARRAY_BUFFER, m_handle);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			m_deleter = [](GLuint & handle){ glDeleteBuffers(1, &handle); };
 			break;
 		case GL_VERTEX_ARRAY:
 			glGenVertexArrays(1, &m_handle);
+			glBindVertexArray(m_handle);
+			glBindVertexArray(0);
 			m_deleter = [](GLuint & handle){ glDeleteVertexArrays(1, &handle); };
 			break;
-		case GL_TEXTURE_1D:
 		case GL_TEXTURE_2D:
-		case GL_TEXTURE_3D:
-		case GL_TEXTURE_1D_ARRAY:
-		case GL_TEXTURE_2D_ARRAY:
-		case GL_TEXTURE_RECTANGLE:
-		case GL_TEXTURE_CUBE_MAP:
-		case GL_TEXTURE_CUBE_MAP_ARRAY:
-		case GL_TEXTURE_BUFFER:
-		case GL_TEXTURE_2D_MULTISAMPLE:
-		case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:
 			glGenTextures(1, &m_handle);
+			glBindTexture(GL_TEXTURE_2D, m_handle);
+			glBindTexture(GL_TEXTURE_2D, 0);
 			m_deleter = [](GLuint & handle){ glDeleteTextures(1, &handle); };
 			break;
 		case GL_TIME_ELAPSED:
@@ -58,6 +54,8 @@ GLObject::GLObject(const GLenum type)
 			break;
 		case GL_FRAMEBUFFER:
 			glGenFramebuffers(1, &m_handle);
+			glBindFramebuffer(GL_FRAMEBUFFER, m_handle);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			m_deleter = [](GLuint & handle){ glDeleteFramebuffers(1, &handle); };
 			break;
 		default:

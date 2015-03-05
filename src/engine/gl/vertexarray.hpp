@@ -11,7 +11,6 @@ class VertexArray {
 	public:
 
 		VertexArray();
-		VertexArray(const std::string &);
 		VertexArray(const VertexArray &) = delete;
 		VertexArray(VertexArray &&) = default;
 		VertexArray & operator=(const VertexArray &) = delete;

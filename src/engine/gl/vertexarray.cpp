@@ -13,16 +13,6 @@ VertexArray::VertexArray()
 	}
 }
 
-VertexArray::VertexArray(const std::string & name)
-  : m_obj{GL_VERTEX_ARRAY}
-{
-	if (m_obj == 0) {
-		LOG("Error creating VertexArray " + name);
-	} else {
-		glObjectLabel(GL_VERTEX_ARRAY, m_obj, static_cast<GLsizei>(name.size()), name.c_str());
-	}
-}
-
 void VertexArray::bind() const {
 	glBindVertexArray(m_obj);
 }

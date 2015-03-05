@@ -9,9 +9,7 @@ class Texture {
 	public:
 
 		Texture();
-		Texture(const std::string &);
 		Texture(unsigned int, unsigned int, GLenum = GL_RGBA, unsigned int = 1);
-		Texture(const std::string &, unsigned int, unsigned int, GLenum = GL_RGBA, unsigned int = 1);
 		Texture(const Texture &) = delete;
 		Texture(Texture &&) = default;
 		Texture & operator=(const Texture &) = delete;
