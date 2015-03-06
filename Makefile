@@ -12,7 +12,6 @@ build/Makefile: CMakeLists.txt
 
 clean:
 	make -C build clean
-	rm -rf cache imgui.ini
 
 distclean:
-	rm -rf build cache imgui.ini
+	rm -rf build imgui.ini contrib/glfw/
