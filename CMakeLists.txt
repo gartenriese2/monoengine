@@ -1,18 +1,19 @@
 cmake_minimum_required(VERSION 2.8.0)
-include(ExternalProject)
+project(MonoEngine)
 
-project(monoEngine)
+set(MonoEngine_VERSION_MAJOR "1")
+set(MonoEngine_VERSION_MINOR "0")
+set(MonoEngine_VERSION_PATCH "3")
+set(MonoEngine_VERSION_EXTRA "-OpenGL4.5")
+set(MonoEngine_VERSION "${MonoEngine_VERSION_MAJOR}.${MonoEngine_VERSION_MINOR}")
+set(MonoEngine_VERSION_FULL "${GLFW_VERSION}.${GLFW_VERSION_PATCH}${GLFW_VERSION_EXTRA}")
 
-#
-# misc
-#
-#set(EXTERN_DIR "${PROJECT_SOURCE_DIR}/extern")
 set(CMAKE_BUILD_TYPE Release)
 
-
-#
-# compiler & flags
-#
+# check OS
+if (NOT UNIX)
+	message(FATAL_ERROR "Only UNIX is supported so far!")
+endif ()
 
 # warnings
 set(MY_WARNING_FLAGS " -Wall -pedantic -Wextra -Werror -Wcast-align -Wconversion -Wfloat-equal -Wformat=2 -Wimplicit-atomic-properties -Wmissing-declarations -Woverlength-strings -Wshadow -Wstrict-selector-match -Wundeclared-selector -Wunreachable-code ")
@@ -37,6 +38,7 @@ find_package(OpenGL REQUIRED)
 find_package(Threads)
 
 # GLFW
+include(ExternalProject)
 ExternalProject_Add(
     glfw
     PREFIX "contrib"
@@ -56,6 +58,6 @@ add_definitions( -DGLEW_NO_GLU -DGLEW_STATIC )
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${PROJECT_SOURCE_DIR}/contrib/glm")
 add_definitions( -DGLM_FORCE_RADIANS )
 
-add_executable(monoEngine ${SRCS} ${HDRS})
+add_executable(MonoEngine ${SRCS} ${HDRS})
 
-target_link_libraries(monoEngine ${GLFW_STATIC_LIB} ${OPENGL_gl_LIBRARY} ${GLFW_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(MonoEngine ${GLFW_STATIC_LIB} ${OPENGL_gl_LIBRARY} ${GLFW_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
