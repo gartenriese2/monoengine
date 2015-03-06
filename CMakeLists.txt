@@ -22,7 +22,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -msse2 -msse3 ${MY_WARNING_FL
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -fno-omit-frame-pointer")
 add_definitions( -I${PROJECT_SOURCE_DIR}/src )
 
-
 # Files
 file(GLOB_RECURSE CXX_SRCS src/*.cpp)
 file(GLOB_RECURSE C_SRCS src/*.c)
