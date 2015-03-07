@@ -53,7 +53,7 @@ GLObject::GLObject(const GLenum type)
 		default:
 			LOG("Unimplemented GLenum!");
 	}
-
+	
 }
 
 GLObject::~GLObject() {

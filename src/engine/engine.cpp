@@ -34,6 +34,9 @@ void Engine::initGLFW() {
 	if (!glfwInit()) {
 		LOG_ERROR("Could not initialize GLFW!");
 	}
+	else {
+		LOG("GLFW initialized!");
+	}
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
@@ -138,14 +141,14 @@ void debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
 
 void Engine::initDebugging() {
 
-	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+	/*glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 
 	glDebugMessageCallback(debugCallback, stderr);
 	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
 	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, 0, GL_FALSE);
 
 	glEnable(GL_DEBUG_OUTPUT);
-	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);*/
 
 }
 

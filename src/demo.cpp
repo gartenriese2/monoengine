@@ -6,6 +6,7 @@
 
 #include <chrono>
 #include <random>
+#include <direct.h>
 
 constexpr auto k_maxNumObjects = 400u;
 constexpr auto k_initialNumObjects = 32u;
@@ -26,21 +27,26 @@ Demo::Demo(const glm::uvec2 & size)
 	m_vao{"demo vao"},
 	m_numObjects{k_initialNumObjects}
 {
+	DEB
+	char cCurrentPath[FILENAME_MAX];
+	_getcwd(cCurrentPath, sizeof(cCurrentPath));
+	LOG(cCurrentPath);
 	init(size);
+	DEB
 }
 
 void Demo::init(const glm::uvec2 & size) {
-
+DEB
 	m_cam.setRatio(static_cast<float>(size.x) / static_cast<float>(size.y));
 	m_cam.setFov(glm::radians(45.f));
 	m_cam.translate({0.f, 0.f, 3.f});
-
+DEB
 	// shader
-	gl::Shader vert("shader/test/instancedraw.vert", "instance_vert");
-	gl::Shader frag("shader/test/color.frag", "color_frag");
+	gl::Shader vert("../../shader/test/instancedraw.vert", "instance_vert");
+	gl::Shader frag("../../shader/test/color.frag", "color_frag");
 	m_prog.attachShader(vert);
 	m_prog.attachShader(frag);
-
+DEB
 	// vbo (pos3 and norm3 interleaved)
 	std::vector<GLfloat> vec = {
 		-1.f, -1.f, 1.f,
