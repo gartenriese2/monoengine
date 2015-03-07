@@ -1,12 +1,12 @@
 #include <cstdlib>
 
 #include "demo.hpp"
-#include "engine\extern\imgui.h"
+#include "engine/extern/imgui.h"
 
 int main() {
 
-	//Demo demo({1920, 1080});
-	//while (demo.render());
+	// Demo demo({1920, 1080});
+	// while (demo.render());
 
 	engine::Engine e({ 1920, 1080 }, "Test");
 

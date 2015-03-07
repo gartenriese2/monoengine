@@ -34,9 +34,6 @@ void Engine::initGLFW() {
 	if (!glfwInit()) {
 		LOG_ERROR("Could not initialize GLFW!");
 	}
-	else {
-		LOG("GLFW initialized!");
-	}
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);

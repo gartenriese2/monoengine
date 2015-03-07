@@ -84,18 +84,16 @@ bool Shader::compileSource() const {
 }
 
 bool Shader::allocate(const std::string & file) {
-	DEB
+
 	if (file.size() < 6 && file[file.size() - 5] != '.') {
 		LOG(file + " is not a valid shader name!");
 		return false;
 	}
-	DEB
+
 	const auto type = file.substr(file.size() - 4);
 	if (type == "vert") {
 		auto obj = GLObject(GL_VERTEX_SHADER);
-		DEB
 		std::swap(m_obj, obj);
-		DEB
 	} else if (type == "frag") {
 		auto obj = GLObject(GL_FRAGMENT_SHADER);
 		std::swap(m_obj, obj);
@@ -115,12 +113,12 @@ bool Shader::allocate(const std::string & file) {
 		LOG("Not a valid shader file ending: " + type);
 		return false;
 	}
-	DEB
+
 	if (m_obj == 0) {
 		LOG("Error allocating shader object: " + file);
 		return false;
 	}
-	DEB
+
 	return true;
 
 }
