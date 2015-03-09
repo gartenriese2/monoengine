@@ -53,11 +53,13 @@ GLObject::GLObject(const GLenum type)
 		default:
 			LOG("Unimplemented GLenum!");
 	}
-	
+
 }
 
 GLObject::~GLObject() {
-	m_deleter(m_handle);
+	if (m_deleter) {
+		m_deleter(m_handle);
+	}
 }
 
 } // namespace gl

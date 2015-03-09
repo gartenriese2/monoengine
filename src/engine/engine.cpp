@@ -51,7 +51,7 @@ void Engine::initGL() {
 
 }
 
-const std::string formatDebugOutput(GLenum source, GLenum type,
+/*const std::string formatDebugOutput(GLenum source, GLenum type,
 	GLuint id, GLenum severity, const std::string & msg) {
 
 	std::string sourceStr {"UNDEFINED"};
@@ -134,7 +134,7 @@ void debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
 	const auto output = formatDebugOutput(source, type, id, severity, message);
 	LOG(output);
 
-}
+}*/
 
 void Engine::initDebugging() {
 

@@ -12,7 +12,7 @@ set(CMAKE_BUILD_TYPE Release)
 
 # check OS
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-  set(WINDOWS "TRUE")
+	set(WINDOWS "TRUE")
 endif ()
 if (NOT UNIX AND NOT WINDOWS)
 	message(FATAL_ERROR "Only UNIX and WINDOWS are supported so far!")
@@ -20,9 +20,15 @@ endif ()
 
 # warnings
 if (UNIX)
-  set(MY_WARNING_FLAGS " -Wall -pedantic -Wextra -Werror -Wcast-align -Wconversion -Wfloat-equal -Wformat=2 -Wimplicit-atomic-properties -Wmissing-declarations -Woverlength-strings -Wshadow -Wstrict-selector-match -Wundeclared-selector -Wunreachable-code ")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -msse2 -msse3 ${MY_WARNING_FLAGS}")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -fno-omit-frame-pointer")
+	set(MY_WARNING_FLAGS " -Wall -pedantic -Wextra -Werror -Wcast-align -Wconversion -Wfloat-equal -Wformat=2 -Wmissing-declarations -Woverlength-strings -Wshadow -Wunreachable-code ")
+	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+		set(MY_WARNING_FLAGS "${MY_WARNING_FLAGS} -Wimplicit-atomic-properties -Wstrict-selector-match -Wundeclared-selector ")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -msse2 -msse3 ${MY_WARNING_FLAGS}")
+	elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+		set(MY_WARNING_FLAGS "${MY_WARNING_FLAGS} -Wno-float-equal -Wno-conversion -Wno-maybe-uninitialized -Wno-unused-but-set-variable ")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -msse2 -msse3 ${MY_WARNING_FLAGS}")
+	endif ()
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -fno-omit-frame-pointer")
 endif ()
 add_definitions( -I${PROJECT_SOURCE_DIR}/src )
 
@@ -42,21 +48,21 @@ find_package(Threads)
 include(ExternalProject)
 if (UNIX)
 	ExternalProject_Add(
-	    glfw
-	    PREFIX "contrib"
-	    URL "https://github.com/glfw/glfw/archive/3.0.4.zip"
-	    CMAKE_ARGS -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_DOCS=OFF -DCMAKE_INSTALL_PREFIX=/glfw
-	    INSTALL_COMMAND make DESTDIR=${PROJECT_SOURCE_DIR}/contrib install
+		glfw
+		PREFIX "contrib"
+		URL "https://github.com/glfw/glfw/archive/3.0.4.zip"
+		CMAKE_ARGS -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_DOCS=OFF -DCMAKE_INSTALL_PREFIX=/glfw
+		INSTALL_COMMAND make DESTDIR=${PROJECT_SOURCE_DIR}/contrib install
 	)
 	set(GLFW_STATIC_LIB "${PROJECT_SOURCE_DIR}/contrib/glfw/lib/libglfw3.a")
 	set(GLFW_LIBRARIES "-lX11 -lXrandr -lXi -lXxf86vm")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${PROJECT_SOURCE_DIR}/contrib/glfw/include")
 elseif (WINDOWS)
 	ExternalProject_Add(
-	    glfw
-	    PREFIX "contrib"
-	    URL "https://github.com/glfw/glfw/archive/3.0.4.zip"
-	    CMAKE_ARGS -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_DOCS=OFF -DCMAKE_INSTALL_PREFIX=${PROJECT_SOURCE_DIR}/contrib/glfw
+		glfw
+		PREFIX "contrib"
+		URL "https://github.com/glfw/glfw/archive/3.0.4.zip"
+		CMAKE_ARGS -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_DOCS=OFF -DCMAKE_INSTALL_PREFIX=${PROJECT_SOURCE_DIR}/contrib/glfw
 	)
 	set(GLFW_STATIC_LIB "${PROJECT_SOURCE_DIR}/contrib/glfw/lib/glfw3.lib")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${PROJECT_SOURCE_DIR}/contrib/glfw/include")
