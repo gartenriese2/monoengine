@@ -36,8 +36,13 @@ void Demo::init(const glm::uvec2 & size) {
 	m_cam.translate({0.f, 0.f, 3.f});
 
 	// shader
+#ifdef _WIN32
+	gl::Shader vert("../shader/test/instancedraw.vert", "instance_vert");
+	gl::Shader frag("../shader/test/color.frag", "color_frag");
+#else
 	gl::Shader vert("shader/test/instancedraw.vert", "instance_vert");
 	gl::Shader frag("shader/test/color.frag", "color_frag");
+#endif
 	m_prog.attachShader(vert);
 	m_prog.attachShader(frag);
 
