@@ -8,8 +8,8 @@
 #include <random>
 #include <future>
 
-constexpr auto k_maxNumObjects = 400u;
-constexpr auto k_initialNumObjects = 32u;
+constexpr auto k_maxNumObjects = 1000u;
+constexpr auto k_initialNumObjects = 50u;
 constexpr auto k_avg = 20u;
 
 std::default_random_engine generator;
@@ -103,7 +103,7 @@ void Demo::init(const glm::uvec2 & size) {
 		1.f, -1.f, 1.f,
 		0.f, -1.f, 0.f
 	};
-	m_vbo.createImmutableStorage(static_cast<unsigned int>(vec.size()) * sizeof(GLfloat), 0, vec.data());
+	m_vbo.createImmutableStorage(static_cast<unsigned int>(vec.size() * sizeof(GLfloat)), 0, vec.data());
 
 	// ibo
 	std::vector<GLushort> idx = {
@@ -125,7 +125,7 @@ void Demo::init(const glm::uvec2 & size) {
 		20, 21, 22,
 		22, 23, 20
 	};
-	m_ibo.createImmutableStorage(static_cast<unsigned int>(vec.size()) * sizeof(GLushort), 0, idx.data());
+	m_ibo.createImmutableStorage(static_cast<unsigned int>(vec.size() * sizeof(GLushort)), 0, idx.data());
 
 	// vao
 	m_vao.bind();
@@ -175,7 +175,7 @@ void Demo::init(const glm::uvec2 & size) {
 }
 
 void Demo::orderModels() {
-	const auto scale = 2.f / m_numObjects;
+	const auto scale = 2.f / static_cast<float>(m_numObjects);
 	auto i = 0u;
 	for (auto & obj : m_objects) {
 		obj.resetScale();
@@ -183,7 +183,8 @@ void Demo::orderModels() {
 		obj.scale({scale * 0.33f, scale * 0.33f, scale * 0.33f});
 		const auto y = i / m_numObjects;
 		const auto x = i % m_numObjects;
-		obj.moveTo({-1.f + scale * (x + 0.5f), -1.f + scale * (y + 0.5f), 0.f});
+		obj.moveTo({-1.f + scale * (static_cast<float>(x) + 0.5f),
+				-1.f + scale * (static_cast<float>(y) + 0.5f), 0.f});
 		i++;
 	}
 }
@@ -203,9 +204,9 @@ void Demo::setModelMatrices() {
 double Demo::getAverageMs(const std::deque<GLuint64> & deque) {
 	auto avg = 0.0;
 	for (const auto & t : deque) {
-		avg += static_cast<long double>(t) * 0.000001;
+		avg += static_cast<double>(t) * 0.000001;
 	}
-	avg /= deque.size();
+	avg /= static_cast<double>(deque.size());
 	return avg;
 }
 
@@ -214,7 +215,7 @@ double Demo::getAverageMs(const std::deque<double> & deque) {
 	for (const auto & t : deque) {
 		avg += t;
 	}
-	avg /= deque.size();
+	avg /= static_cast<double>(deque.size());
 	return avg;
 }
 
@@ -278,7 +279,7 @@ bool Demo::render() {
 		for (const auto & f : futures) {
 			f.wait();
 		}
-	}	
+	}
 	setModelMatrices();
 	std::chrono::duration<double> tmp = std::chrono::system_clock::now() - start;
 	m_cpuTimeDeque.emplace_back(tmp.count() * 1000.0);

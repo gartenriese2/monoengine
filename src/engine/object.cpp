@@ -14,7 +14,7 @@ Object::Object()
 }
 
 void Object::move(const float val, const glm::vec3 & dir) {
-	if (glm::length(dir) != 0.f) {
+	if (std::abs(glm::length(dir)) > 0.f) {
 		m_translate = glm::translate(m_translate, val * dir);
 		m_model = m_translate * m_rotate * m_scale;
 		m_actualPosition += (val * dir);
@@ -22,7 +22,7 @@ void Object::move(const float val, const glm::vec3 & dir) {
 }
 
 void Object::moveLocal(const float val, const glm::vec3 & dir) {
-	if (glm::length(dir) != 0.f) {
+	if (std::abs(glm::length(dir)) > 0.f) {
 		m_translate = glm::translate(m_translate * m_rotate, val * dir);
 		m_model = m_translate * m_rotate * m_scale;
 		m_actualPosition += (val * dir);
@@ -41,7 +41,7 @@ void Object::resetMoves() {
 }
 
 void Object::scale(const glm::vec3 & val) {
-	if (glm::length(val) != 0.f) {
+	if (std::abs(glm::length(val)) > 0.f) {
 		m_scale = glm::scale(m_scale, val);
 		m_model = m_translate * m_rotate * m_scale;
 	}
@@ -52,7 +52,7 @@ void Object::resetScale() {
 }
 
 void Object::rotate(const float radians, const glm::vec3 & axis) {
-	if (glm::length(axis) != 0.f) {
+	if (std::abs(glm::length(axis)) > 0.f) {
 		const auto norm = glm::normalize(axis);
 		m_rotate = glm::rotate(m_rotate, radians, norm);
 		m_model = m_translate * m_rotate * m_scale;
@@ -60,7 +60,7 @@ void Object::rotate(const float radians, const glm::vec3 & axis) {
 }
 
 void Object::rotateAround(const float radians, const glm::vec3 & axis, const glm::vec3 & point) {
-	if (glm::length(axis) != 0.f) {
+	if (std::abs(glm::length(axis)) > 0.f) {
 		rotate(radians, axis);
 
 		// http://inside.mines.edu/~gmurray/ArbitraryAxisRotation/ArbitraryAxisRotation.html -> Section 6.2

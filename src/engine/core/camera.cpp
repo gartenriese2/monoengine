@@ -101,7 +101,7 @@ void Camera::setFar(const float val) {
 
 void Camera::roll(const float angle) {
 
-	if (angle == 0.f) {
+	if (std::abs(angle) <= 0.f) {
 		return;
 	}
 
@@ -117,7 +117,7 @@ void Camera::roll(const float angle) {
 
 void Camera::pitch(const float angle) {
 
-	if (angle == 0.f) {
+	if (std::abs(angle) <= 0.f) {
 		return;
 	}
 
@@ -134,7 +134,7 @@ void Camera::pitch(const float angle) {
 
 void Camera::yaw(const float angle) {
 
-	if (angle == 0.f) {
+	if (std::abs(angle) <= 0.f) {
 		return;
 	}
 
@@ -150,7 +150,7 @@ void Camera::yaw(const float angle) {
 
 void Camera::rotate(const float angle, const glm::vec3 & axis) {
 
-	if (angle == 0.f) {
+	if (std::abs(angle) <= 0.f) {
 		return;
 	}
 
@@ -170,7 +170,7 @@ void Camera::rotate(const float angle, const glm::vec3 & axis) {
 
 void Camera::translate(const glm::vec3 & v) {
 
-	if (v.length() == 0.f) {
+	if (std::abs(static_cast<float>(v.length())) <= 0.f) {
 		return;
 	}
 
@@ -182,7 +182,7 @@ void Camera::translate(const glm::vec3 & v) {
 
 void Camera::translateLocal(const glm::vec3 & v) {
 
-	if (v.length() == 0.f) {
+	if (std::abs(static_cast<float>(v.length())) <= 0.f) {
 		return;
 	}
 
