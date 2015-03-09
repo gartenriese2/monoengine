@@ -6,6 +6,7 @@
 
 #include <chrono>
 #include <random>
+#include <future>
 
 constexpr auto k_maxNumObjects = 400u;
 constexpr auto k_initialNumObjects = 32u;
@@ -252,11 +253,32 @@ bool Demo::render() {
 
 	// rotate objects
 	const auto start = std::chrono::system_clock::now();
-	for (auto i = 0u; i < m_numObjects * m_numObjects; ++i) {
-		m_objects[i].rotate(0.03f,
-				{distribution(generator), distribution(generator), distribution(generator)});
-		m_objects[i].rotateAround(0.01f, {0.f, 1.f, 0.f});
+	const auto t = std::thread::hardware_concurrency();
+	if (t <= 1) {
+		for (auto i = 0u; i < m_numObjects * m_numObjects; ++i) {
+			m_objects[i].rotate(0.03f,
+			{ distribution(generator), distribution(generator), distribution(generator) });
+			m_objects[i].rotateAround(0.01f, { 0.f, 1.f, 0.f });
+		}
 	}
+	else {
+		const auto parFunc = [&](unsigned int from, unsigned int to) {
+			for (auto i = from; i < to; ++i) {
+				m_objects[i].rotate(0.03f,
+					{ distribution(generator), distribution(generator), distribution(generator) });
+				m_objects[i].rotateAround(0.01f, { 0.f, 1.f, 0.f });
+			}
+		};
+		std::vector<std::future<void>> futures;
+		futures.reserve(t);
+		const auto step = m_numObjects * m_numObjects / t;
+		for (auto j = 0u; j < t; ++j) {
+			futures.emplace_back(std::async(std::launch::async, parFunc, j * step, j == t - 1 ? m_numObjects * m_numObjects : (j + 1) * step));
+		}
+		for (const auto & f : futures) {
+			f.wait();
+		}
+	}	
 	setModelMatrices();
 	std::chrono::duration<double> tmp = std::chrono::system_clock::now() - start;
 	m_cpuTimeDeque.emplace_back(tmp.count() * 1000.0);
