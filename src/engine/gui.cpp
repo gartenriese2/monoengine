@@ -99,7 +99,7 @@ void renderDrawLists(ImDrawList ** const cmd_lists, const int cmd_lists_count) {
 	}
 
 	// Restore modified state
-	glBindVertexArray(0);
+	GuiData.vao->unbind();
 	glUseProgram(0);
 	glDisable(GL_SCISSOR_TEST);
 	glDisable(GL_BLEND);
@@ -122,8 +122,8 @@ Gui::Gui(std::unique_ptr<Window> & window, std::unique_ptr<core::Input> & input)
 
 	auto & io = ImGui::GetIO();
 	const auto size = m_window->getFrameBufferSize();
-	io.DisplaySize.x = size.x;
-	io.DisplaySize.y = size.y;
+	io.DisplaySize.x = static_cast<float>(size.x);
+	io.DisplaySize.y = static_cast<float>(size.y);
 	io.RenderDrawListsFn = renderDrawLists;
 	io.KeyMap[ImGuiKey_Tab] = GLFW_KEY_TAB;
 	io.KeyMap[ImGuiKey_LeftArrow] = GLFW_KEY_LEFT;
@@ -295,8 +295,8 @@ void Gui::update() {
 	auto & io = ImGui::GetIO();
 
 	const auto size = m_window->getFrameBufferSize();
-	io.DisplaySize.x = size.x;
-	io.DisplaySize.y = size.y;
+	io.DisplaySize.x = static_cast<float>(size.x);
+	io.DisplaySize.y = static_cast<float>(size.y);
 
 	io.MousePos = ImVec2(static_cast<float>(m_mousePos.x), static_cast<float>(m_mousePos.y));
 

@@ -7,7 +7,6 @@ layout(std140) uniform ModelMatrixBuffer {
 
 out vec3 color;
 
-// uniform vec3 col;
 uniform mat4 ViewProj;
 
 void main() {

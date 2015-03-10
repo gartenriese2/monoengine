@@ -65,7 +65,9 @@ GLObject::GLObject(const GLenum type)
 }
 
 GLObject::~GLObject() {
-	m_deleter(m_handle);
+	if (m_deleter) {
+		m_deleter(m_handle);
+	}
 }
 
 } // namespace gl

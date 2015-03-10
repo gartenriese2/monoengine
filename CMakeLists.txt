@@ -3,7 +3,7 @@ project(monoEngine)
 
 set(MonoEngine_VERSION_MAJOR "1")
 set(MonoEngine_VERSION_MINOR "0")
-set(MonoEngine_VERSION_PATCH "3")
+set(MonoEngine_VERSION_PATCH "4")
 set(MonoEngine_VERSION_EXTRA "-OpenGL3.3")
 set(MonoEngine_VERSION "${MonoEngine_VERSION_MAJOR}.${MonoEngine_VERSION_MINOR}")
 set(MonoEngine_VERSION_FULL "${GLFW_VERSION}.${GLFW_VERSION_PATCH}${GLFW_VERSION_EXTRA}")
