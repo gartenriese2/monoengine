@@ -158,8 +158,8 @@ void Demo::init(const glm::uvec2 & size) {
 	});
 
 	// modelMatrixBuffer
-	m_modelMatrixBuffer.createImmutableStorage(k_maxNumObjects * k_maxNumObjects * sizeof(glm::mat4),
-			GL_MAP_WRITE_BIT | GL_DYNAMIC_STORAGE_BIT);
+	m_modelMatrixBuffer.createImmutableStorage(k_maxNumObjects * k_maxNumObjects
+			* static_cast<unsigned int>(sizeof(glm::mat4)), GL_MAP_WRITE_BIT | GL_DYNAMIC_STORAGE_BIT);
 	m_objects.resize(k_maxNumObjects * k_maxNumObjects);
 	orderModels();
 	setModelMatrices();

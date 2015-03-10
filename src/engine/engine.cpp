@@ -51,7 +51,11 @@ void Engine::initGL() {
 
 }
 
-/*const std::string formatDebugOutput(GLenum source, GLenum type,
+#ifndef _WIN32
+const std::string formatDebugOutput(GLenum, GLenum,	GLuint, GLenum, const std::string &);
+void debugCallback(GLenum, GLenum, GLuint, GLenum, GLsizei, const GLchar *, const void *);
+
+const std::string formatDebugOutput(GLenum source, GLenum type,
 	GLuint id, GLenum severity, const std::string & msg) {
 
 	std::string sourceStr {"UNDEFINED"};
@@ -134,20 +138,21 @@ void debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
 	const auto output = formatDebugOutput(source, type, id, severity, message);
 	LOG(output);
 
-}*/
+}
 
 void Engine::initDebugging() {
-
-	/*glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 	glDebugMessageCallback(debugCallback, stderr);
 	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
 	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, 0, GL_FALSE);
-
 	glEnable(GL_DEBUG_OUTPUT);
-	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);*/
-
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 }
+#else
+void Engine::initDebugging() {
+	LOG_WARNING("Windows does not support OpenGL debugging");
+}
+#endif
 
 bool Engine::render() {
 

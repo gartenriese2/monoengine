@@ -27,6 +27,10 @@ void VertexArray::bind() const {
 	glBindVertexArray(m_obj);
 }
 
+void VertexArray::unbind() const {
+	glBindVertexArray(0);
+}
+
 bool VertexArray::attribBindingEnabled(const unsigned int attribIndex) const {
 	bind();
 	GLint ret;

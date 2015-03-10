@@ -21,6 +21,7 @@ class VertexArray {
 		operator GLuint() const { return m_obj; }
 
 		void bind() const;
+		void unbind() const;
 
 		bool attribBindingEnabled(unsigned int) const;
 		void enableAttribBinding(unsigned int) const;

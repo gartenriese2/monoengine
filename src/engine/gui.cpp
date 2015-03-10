@@ -95,7 +95,7 @@ void renderDrawLists(ImDrawList ** const cmd_lists, const int cmd_lists_count) {
 	}
 
 	// Restore modified state
-	glBindVertexArray(0);
+	GuiData.vao->unbind();
 	glUseProgram(0);
 	glDisable(GL_SCISSOR_TEST);
 	glDisable(GL_BLEND);

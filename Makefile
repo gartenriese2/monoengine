@@ -2,7 +2,7 @@
 
 
 all: build/Makefile
-	@make -j 4 -C build
+	@make -C build
 	@mkdir -p bin
 	@cp build/monoEngine bin
 
