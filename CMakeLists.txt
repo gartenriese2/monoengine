@@ -58,7 +58,7 @@ find_package(Threads)
 #--------------------------------------------------------------------
 set(GLFW_DOWNLOAD_DIR "${PROJECT_SOURCE_DIR}/dl" CACHE STRING "specifies the GLFW download directory")
 set(GLFW_DOWNLOAD_FILE "3.0.4.zip")
-if (EXISTS ${GLFW_DOWNLOAD_DIR})
+if (EXISTS ${GLFW_DOWNLOAD_DIR}/${GLFW_DOWNLOAD_FILE})
 	set(GLFW_URL "${GLFW_DOWNLOAD_DIR}/${GLFW_DOWNLOAD_FILE}")
 else ()
 	set(GLFW_URL "https://github.com/glfw/glfw/archive/${GLFW_DOWNLOAD_FILE}")
