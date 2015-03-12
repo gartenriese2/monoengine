@@ -31,8 +31,8 @@ Camera::Camera(const glm::vec3 & pos, const glm::vec3 & dir, const glm::vec3 & u
 	m_far{far},
 	m_modified{true}
 {
-	LOG_ASSERT(std::abs(dir.length()) <= 0.f, "Camera: length of dir is 0");
-	LOG_ASSERT(std::abs(up.length()) <= 0.f, "Camera: length of up is 0");
+	LOG_ASSERT(std::abs(dir.length()) > 0.f, "Camera: length of dir > 0");
+	LOG_ASSERT(std::abs(up.length()) > 0.f, "Camera: length of up > 0");
 	LOG_ASSERT(near > 0.f, "Camera: near plane is not positive");
 	LOG_ASSERT(far > near, "Camera: far plane is not greater than near plane");
 	if (m_far >= std::numeric_limits<float>::infinity()) {
@@ -155,7 +155,7 @@ void Camera::rotate(const float angle, const glm::vec3 & axis) {
 		return;
 	}
 
-	assert(axis.length() != 0.f);
+	LOG_ASSERT(std::abs(axis.length()) > 0.f, "rotation axis > 0.f");
 
 	const auto n = glm::normalize(axis);
 	const auto q = glm::angleAxis(angle, n);
