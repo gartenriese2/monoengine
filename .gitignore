@@ -1,3 +1,6 @@
 imgui.ini
 *.sublime-workspace
 dl
+bin
+build
+contrib/glfw
