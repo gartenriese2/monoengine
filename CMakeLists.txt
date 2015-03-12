@@ -1,16 +1,15 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(monoEngine)
 
+#--------------------------------------------------------------------
+# Set version
+#--------------------------------------------------------------------
 set(MONOENGINE_VERSION_MAJOR "1")
 set(MONOENGINE_VERSION_MINOR "0")
-set(MONOENGINE_VERSION_PATCH "4")
+set(MONOENGINE_VERSION_PATCH "5")
 set(MONOENGINE_VERSION_EXTRA "-OpenGL4.5")
 set(MONOENGINE_VERSION "${MONOENGINE_VERSION_MAJOR}.${MONOENGINE_VERSION_MINOR}")
 set(MONOENGINE_VERSION_FULL "${GLFW_VERSION}.${GLFW_VERSION_PATCH}${GLFW_VERSION_EXTRA}")
-
-set(CMAKE_BUILD_TYPE Release)
-
-option(STATIC_LIB "builds static library" OFF)
 
 #--------------------------------------------------------------------
 # Check OS
@@ -20,6 +19,14 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 endif ()
 if (NOT UNIX AND NOT WINDOWS)
 	message(FATAL_ERROR "Only UNIX and WINDOWS are supported so far!")
+endif ()
+
+#--------------------------------------------------------------------
+# Check if static lib
+#--------------------------------------------------------------------
+option(STATIC_LIB "builds static library" OFF)
+if (NOT STATIC_LIB)
+	set(CMAKE_BUILD_TYPE Release)
 endif ()
 
 #--------------------------------------------------------------------
@@ -35,7 +42,6 @@ if (UNIX)
 	endif ()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -msse2 -msse3 ${MY_WARNING_FLAGS}")
 endif ()
-add_definitions( -I${PROJECT_SOURCE_DIR}/src )
 
 #--------------------------------------------------------------------
 # Glob files
@@ -89,10 +95,14 @@ elseif (WINDOWS)
 endif ()
 add_definitions( -DGLFW_INCLUDE_NONE ) # we already include the glew headers
 
-# Glew
+#--------------------------------------------------------------------
+# GLEW
+#--------------------------------------------------------------------
 add_definitions( -DGLEW_NO_GLU -DGLEW_STATIC )
 
-# glm
+#--------------------------------------------------------------------
+# GLM
+#--------------------------------------------------------------------
 if (UNIX)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${PROJECT_SOURCE_DIR}/contrib/glm")
 elseif (WINDOWS)
@@ -100,6 +110,9 @@ elseif (WINDOWS)
 endif ()
 add_definitions( -DGLM_FORCE_RADIANS )
 
+#--------------------------------------------------------------------
+# Building
+#--------------------------------------------------------------------
 if (STATIC_LIB)
 	add_library(monoEngine STATIC ${SRCS} ${HDRS})
 else ()
