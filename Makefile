@@ -12,6 +12,7 @@ build/Makefile: CMakeLists.txt
 
 clean:
 	make -C build clean
+	rm -rf build/* bin/*
 
 distclean:
-	rm -rf build imgui.ini contrib/glfw/
+	rm -rf build imgui.ini contrib/glfw/ dl bin
