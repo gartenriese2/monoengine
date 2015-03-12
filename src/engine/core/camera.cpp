@@ -1,5 +1,7 @@
 #include "camera.hpp"
 
+#include "log.hpp"
+
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 
@@ -29,10 +31,10 @@ Camera::Camera(const glm::vec3 & pos, const glm::vec3 & dir, const glm::vec3 & u
 	m_far{far},
 	m_modified{true}
 {
-	assert(dir.length() != 0.f);
-	assert(up.length() != 0.f);
-	assert(near > 0.f);
-	assert(far > near);
+	LOG_ASSERT(std::abs(dir.length()) <= 0.f, "Camera: length of dir is 0");
+	LOG_ASSERT(std::abs(up.length()) <= 0.f, "Camera: length of up is 0");
+	LOG_ASSERT(near > 0.f, "Camera: near plane is not positive");
+	LOG_ASSERT(far > near, "Camera: far plane is not greater than near plane");
 	if (m_far >= std::numeric_limits<float>::infinity()) {
 		m_projMat = glm::infinitePerspective(m_fov, m_ratio, m_near);
 	} else {

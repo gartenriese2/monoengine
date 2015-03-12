@@ -8,6 +8,7 @@
 #define LOG(...) core::Log::log(__VA_ARGS__)
 #define LOG_WARNING(...) core::Log::logWarning(__VA_ARGS__)
 #define LOG_ERROR(...) core::Log::logError(__VA_ARGS__)
+#define LOG_ASSERT(assertion, output) core::Log::logAssert(assertion, output)
 
 namespace core {
 
@@ -77,6 +78,7 @@ class Log {
 		}
 
 		static void logGL();
+		static void logAssert(bool assertion, const std::string & output);
 
 	protected:
 

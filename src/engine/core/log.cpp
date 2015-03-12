@@ -52,4 +52,10 @@ void Log::logGL() {
 
 }
 
+void Log::logAssert(const bool assertion, const std::string & output) {
+	if (!assertion) {
+		logError("Assertion failed: " + output);
+	}
+}
+
 } // namespace core
