@@ -8,6 +8,8 @@
 
 namespace engine {
 
+class Engine;
+
 class Gui {
 
 	public:
@@ -15,8 +17,10 @@ class Gui {
 		Gui(std::unique_ptr<Window> &, std::unique_ptr<core::Input> &);
 		~Gui();
 
+	protected:
+
+		friend Engine;
 		void update();
-		void render();
 
 	private:
 

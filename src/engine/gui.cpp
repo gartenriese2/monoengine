@@ -315,8 +315,4 @@ void Gui::update() {
 
 }
 
-void Gui::render() {
-	ImGui::Render();
-}
-
 } // namespace engine
