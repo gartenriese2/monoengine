@@ -18,6 +18,7 @@ Demo::Demo(const glm::uvec2 & size)
   : m_engine{size, "monoEngine Demo", true},
 	m_numObjects{k_initialNumObjects}
 {
+	m_engine.showFPS(true);
 	init(size);
 }
 
@@ -240,10 +241,11 @@ double Demo::getAverageMs(const std::deque<double> & deque) {
 
 bool Demo::render() {
 
+	const auto start = std::chrono::system_clock::now();
+	m_timer.start();
+
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
-
-	m_timer.start();
 
 	// setup shader
 	m_prog.use();
@@ -271,16 +273,7 @@ bool Demo::render() {
 	m_fbo.blitAttachment(GL_COLOR_ATTACHMENT0, {0, 0, size.x, size.y});
 	m_fbo.unbind();
 
-	// stop timer
-	m_timeDeque.emplace_back(m_timer.stop());
-	static auto ms = 0.0;
-	if (m_timeDeque.size() == k_avg) {
-		ms = getAverageMs(m_timeDeque);
-		m_timeDeque.erase(m_timeDeque.begin(), m_timeDeque.begin() + k_avg / 2);
-	}
-
 	// rotate objects
-	const auto start = std::chrono::system_clock::now();
 	for (auto i = 0u; i < m_numObjects * m_numObjects; ++i) {
 		m_objects[i].rotate(0.03f,
 				{distribution(generator), distribution(generator), distribution(generator)});
@@ -289,6 +282,14 @@ bool Demo::render() {
 	m_modelMatrixBuffer.bind(GL_UNIFORM_BUFFER);
 	setModelMatrices();
 	m_modelMatrixBuffer.unbind();
+
+	// stop timers
+	m_timeDeque.emplace_back(m_timer.stop());
+	static auto ms = 0.0;
+	if (m_timeDeque.size() == k_avg) {
+		ms = getAverageMs(m_timeDeque);
+		m_timeDeque.erase(m_timeDeque.begin(), m_timeDeque.begin() + k_avg / 2);
+	}
 	std::chrono::duration<double> tmp = std::chrono::system_clock::now() - start;
 	m_cpuTimeDeque.emplace_back(tmp.count() * 1000.0);
 	static auto ms_cpu = 0.0;
@@ -298,7 +299,8 @@ bool Demo::render() {
 	}
 
 	// Gui
-	m_engine.getGuiPtr()->update();
+	ImGui::NewFrame();
+	ImGui::Begin("Demo");
 	int numObj = static_cast<int>(m_numObjects);
 	ImGui::SliderInt("numObjects", &numObj, 1, static_cast<int>(m_maxNumObjects));
 	if (m_numObjects != static_cast<unsigned int>(numObj)) {
@@ -313,15 +315,11 @@ bool Demo::render() {
 	ImGui::NextColumn();
 	ImGui::Text("%f", ms);
 	ImGui::NextColumn();
-	ImGui::Text("fps");
-	ImGui::NextColumn();
-	ImGui::Text("%d", static_cast<unsigned int>(1000.0 / ms));
-	ImGui::NextColumn();
 	ImGui::Text("ms cpu");
 	ImGui::NextColumn();
 	ImGui::Text("%f", ms_cpu);
 	ImGui::NextColumn();
-	m_engine.getGuiPtr()->render();
+	ImGui::End();
 
 	return m_engine.render();
 
