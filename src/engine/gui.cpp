@@ -313,8 +313,6 @@ void Gui::update() {
 		}
 	}
 
-	ImGui::NewFrame();
-
 }
 
 void Gui::render() {

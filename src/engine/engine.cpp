@@ -2,11 +2,18 @@
 
 #include "extern/glfwinclude.hpp"
 #include "extern/glinclude.hpp"
+#include "extern/imgui.h"
 #include "core/log.hpp"
 
 namespace engine {
 
-Engine::Engine(const glm::uvec2 & size,	const std::string & title, const bool debugging) {
+constexpr auto k_avg = 20u;
+
+Engine::Engine(const glm::uvec2 & size,	const std::string & title, const bool debugging)
+  : m_start{std::chrono::system_clock::now()},
+	m_currentFPS{0u},
+	m_showFPS{false}
+{
 
 	initGLFW();
 	m_window = std::make_unique<Window>(size, title);
@@ -36,8 +43,8 @@ void Engine::initGLFW() {
 	}
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 }
 
@@ -45,9 +52,9 @@ void Engine::initGL() {
 
 	glewExperimental = GL_TRUE;
 	const auto err = glewInit();
-    if (err != GLEW_OK) {
-        LOG_ERROR("Failed to initialize GLEW:", glewGetErrorString(err));
-    }
+	if (err != GLEW_OK) {
+		LOG_ERROR("Failed to initialize GLEW:", glewGetErrorString(err));
+	}
 
 }
 
@@ -156,8 +163,46 @@ void Engine::initDebugging() {
 
 bool Engine::render() {
 
-	return m_window->render();
+	if (m_showFPS) {
+		renderFPS();
+	}
+	m_gui->render();
+	if (m_window->render()) {
+		const std::chrono::duration<double> elapsed = std::chrono::system_clock::now() - m_start;
+		m_times.emplace_back(elapsed.count() * 1000.0);
+		m_start = std::chrono::system_clock::now();
+		m_gui->update();
+		return true;
+	}
+	return false;
 
+}
+
+void Engine::showFPS(const bool show) {
+	m_showFPS = show;
+}
+
+void Engine::renderFPS() {
+	bool opened;
+	if (!ImGui::Begin("Example: Fixed Overlay", &opened, ImVec2(100,20), 0.3f, ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoSavedSettings)) {
+		ImGui::End();
+		return;
+	}
+
+	if (m_times.size() == k_avg) {
+		auto avg = 0.0;
+		for (const auto & t : m_times) {
+			avg += t;
+		}
+		avg /= static_cast<double>(k_avg);
+		m_currentFPS = static_cast<unsigned int>(1000.0 / avg);
+		m_times.erase(m_times.begin(), m_times.begin() + k_avg / 2);
+	}
+
+	const auto size = m_window->getFrameBufferSize();
+	ImGui::SetWindowPos(ImVec2(static_cast<float>(size.x) - 110.f, 10.f));
+	ImGui::Text("fps: %d", m_currentFPS);
+	ImGui::End();
 }
 
 } // namespace engine
