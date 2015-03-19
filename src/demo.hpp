@@ -49,5 +49,6 @@ class Demo {
 		std::deque<double> m_cpuTimeDeque;
 
 		unsigned int m_numObjects;
+		bool m_rotate;
 
 };

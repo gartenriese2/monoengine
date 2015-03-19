@@ -9,7 +9,7 @@
 #include <future>
 
 constexpr auto k_maxNumObjects = 1000u;
-constexpr auto k_initialNumObjects = 50u;
+constexpr auto k_initialNumObjects = 300u;
 constexpr auto k_avg = 20u;
 
 std::default_random_engine generator;
@@ -25,7 +25,8 @@ Demo::Demo(const glm::uvec2 & size)
 	m_ibo{"demo ibo"},
 	m_modelMatrixBuffer{"demo ssbo"},
 	m_vao{"demo vao"},
-	m_numObjects{k_initialNumObjects}
+	m_numObjects{k_initialNumObjects},
+	m_rotate{true}
 {
 	m_engine.showFPS(true);
 	init(size);
@@ -221,7 +222,7 @@ double Demo::getAverageMs(const std::deque<double> & deque) {
 }
 
 bool Demo::render() {
-ImGui::NewFrame();
+
 	const auto start = std::chrono::system_clock::now();
 	m_timer.start();
 
@@ -247,33 +248,35 @@ ImGui::NewFrame();
 	m_fbo.blitAttachment(GL_COLOR_ATTACHMENT0, {0, 0, size.x, size.y});
 
 	// rotate objects
-	const auto t = std::thread::hardware_concurrency();
-	if (t <= 1) {
-		for (auto i = 0u; i < m_numObjects * m_numObjects; ++i) {
-			m_objects[i].rotate(0.03f,
-			{ distribution(generator), distribution(generator), distribution(generator) });
-			m_objects[i].rotateAround(0.01f, { 0.f, 1.f, 0.f });
-		}
-	}
-	else {
-		const auto parFunc = [&](unsigned int from, unsigned int to) {
-			for (auto i = from; i < to; ++i) {
+	if (m_rotate) {
+		const auto t = std::thread::hardware_concurrency();
+		if (t <= 1) {
+			for (auto i = 0u; i < m_numObjects * m_numObjects; ++i) {
 				m_objects[i].rotate(0.03f,
-					{ distribution(generator), distribution(generator), distribution(generator) });
+				{ distribution(generator), distribution(generator), distribution(generator) });
 				m_objects[i].rotateAround(0.01f, { 0.f, 1.f, 0.f });
 			}
-		};
-		std::vector<std::future<void>> futures;
-		futures.reserve(t);
-		const auto step = m_numObjects * m_numObjects / t;
-		for (auto j = 0u; j < t; ++j) {
-			futures.emplace_back(std::async(std::launch::async, parFunc, j * step, j == t - 1 ? m_numObjects * m_numObjects : (j + 1) * step));
 		}
-		for (const auto & f : futures) {
-			f.wait();
+		else {
+			const auto parFunc = [&](unsigned int from, unsigned int to) {
+				for (auto i = from; i < to; ++i) {
+					m_objects[i].rotate(0.03f,
+						{ distribution(generator), distribution(generator), distribution(generator) });
+					m_objects[i].rotateAround(0.01f, { 0.f, 1.f, 0.f });
+				}
+			};
+			std::vector<std::future<void>> futures;
+			futures.reserve(t);
+			const auto step = m_numObjects * m_numObjects / t;
+			for (auto j = 0u; j < t; ++j) {
+				futures.emplace_back(std::async(std::launch::async, parFunc, j * step, j == t - 1 ? m_numObjects * m_numObjects : (j + 1) * step));
+			}
+			for (const auto & f : futures) {
+				f.wait();
+			}
 		}
+		setModelMatrices();
 	}
-	setModelMatrices();
 
 	// stop timers
 	m_timeDeque.emplace_back(m_timer.stop());
