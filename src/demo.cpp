@@ -240,7 +240,7 @@ double Demo::getAverageMs(const std::deque<double> & deque) {
 }
 
 bool Demo::render() {
-
+ImGui::NewFrame();
 	const auto start = std::chrono::system_clock::now();
 	m_timer.start();
 
@@ -299,7 +299,7 @@ bool Demo::render() {
 	}
 
 	// Gui
-	ImGui::NewFrame();
+	m_engine.getGuiPtr()->newFrame();
 	ImGui::Begin("Demo");
 	int numObj = static_cast<int>(m_numObjects);
 	ImGui::SliderInt("numObjects", &numObj, 1, static_cast<int>(m_maxNumObjects));

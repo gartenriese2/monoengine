@@ -17,10 +17,13 @@ class Gui {
 		Gui(std::unique_ptr<Window> &, std::unique_ptr<core::Input> &);
 		~Gui();
 
+		void newFrame();
+
 	protected:
 
 		friend Engine;
 		void update();
+		bool render();
 
 	private:
 
@@ -41,6 +44,8 @@ class Gui {
 		std::map<int, bool> m_keysReleased;
 		bool m_controlPressed;
 		bool m_shiftPressed;
+
+		bool m_frameInitialized;
 
 };
 
