@@ -113,7 +113,8 @@ Gui::Gui(std::unique_ptr<Window> & window, std::unique_ptr<core::Input> & input)
 	m_leftMouseButtonDown{false},
 	m_leftMouseButtonRelease{false},
 	m_controlPressed{false},
-	m_shiftPressed{false}
+	m_shiftPressed{false},
+	m_frameInitialized{false}
 {
 
 	auto & io = ImGui::GetIO();
@@ -280,6 +281,13 @@ void Gui::initProgram() {
 	glProgramUniform1i(GuiData.prog, loc, k_fontTexUnit);
 }
 
+void Gui::newFrame() {
+	if (!m_frameInitialized) {
+		ImGui::NewFrame();
+		m_frameInitialized = true;
+	}
+}
+
 void Gui::update() {
 
 	auto & io = ImGui::GetIO();
@@ -313,6 +321,15 @@ void Gui::update() {
 		}
 	}
 
+}
+
+bool Gui::render() {
+	if (!m_frameInitialized) {
+		return false;
+	}
+	ImGui::Render();
+	m_frameInitialized = false;
+	return true;
 }
 
 } // namespace engine

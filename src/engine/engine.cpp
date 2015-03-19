@@ -164,9 +164,10 @@ void Engine::initDebugging() {
 bool Engine::render() {
 
 	if (m_showFPS) {
+		m_gui->newFrame();
 		renderFPS();
 	}
-	ImGui::Render();
+	m_gui->render();
 	if (m_window->render()) {
 		const std::chrono::duration<double> elapsed = std::chrono::system_clock::now() - m_start;
 		m_times.emplace_back(elapsed.count() * 1000.0);
