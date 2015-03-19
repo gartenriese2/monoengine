@@ -135,7 +135,7 @@ void Demo::init(const glm::uvec2 & size) {
 		22, 23, 20
 	};
 	m_ibo.bind(GL_ARRAY_BUFFER);
-	m_ibo.createMutableStorage(static_cast<unsigned int>(vec.size() * sizeof(GLushort)),
+	m_ibo.createMutableStorage(static_cast<unsigned int>(idx.size() * sizeof(GLushort)),
 			GL_STATIC_DRAW, idx.data());
 	m_ibo.unbind();
 
