@@ -322,6 +322,7 @@ bool Demo::render() {
 	ImGui::NextColumn();
 	ImGui::Text("%f", ms_cpu);
 	ImGui::NextColumn();
+	ImGui::Checkbox("Rotate", &m_rotate);
 	ImGui::End();
 
 	return m_engine.render();
