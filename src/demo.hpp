@@ -50,5 +50,6 @@ class Demo {
 
 		unsigned int m_numObjects;
 		unsigned int m_maxNumObjects;
+		bool m_rotate;
 
 };

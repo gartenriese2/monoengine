@@ -16,7 +16,8 @@ std::uniform_real_distribution<float> distribution(0.f, 1.f);
 
 Demo::Demo(const glm::uvec2 & size)
   : m_engine{size, "monoEngine Demo", true},
-	m_numObjects{k_initialNumObjects}
+	m_numObjects{k_initialNumObjects},
+	m_rotate{true}
 {
 	m_engine.showFPS(true);
 	init(size);
@@ -240,7 +241,7 @@ double Demo::getAverageMs(const std::deque<double> & deque) {
 }
 
 bool Demo::render() {
-ImGui::NewFrame();
+
 	const auto start = std::chrono::system_clock::now();
 	m_timer.start();
 
@@ -274,14 +275,16 @@ ImGui::NewFrame();
 	m_fbo.unbind();
 
 	// rotate objects
-	for (auto i = 0u; i < m_numObjects * m_numObjects; ++i) {
-		m_objects[i].rotate(0.03f,
-				{distribution(generator), distribution(generator), distribution(generator)});
-		m_objects[i].rotateAround(0.01f, {0.f, 1.f, 0.f});
+	if (m_rotate) {
+		for (auto i = 0u; i < m_numObjects * m_numObjects; ++i) {
+			m_objects[i].rotate(0.03f,
+					{distribution(generator), distribution(generator), distribution(generator)});
+			m_objects[i].rotateAround(0.01f, {0.f, 1.f, 0.f});
+		}
+		m_modelMatrixBuffer.bind(GL_UNIFORM_BUFFER);
+		setModelMatrices();
+		m_modelMatrixBuffer.unbind();
 	}
-	m_modelMatrixBuffer.bind(GL_UNIFORM_BUFFER);
-	setModelMatrices();
-	m_modelMatrixBuffer.unbind();
 
 	// stop timers
 	m_timeDeque.emplace_back(m_timer.stop());
