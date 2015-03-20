@@ -1,14 +1,18 @@
 .PHONY: all clean distclean
 
 
+COMPILER ?= "clang++"
+
 all: build/Makefile
 	@make -j -C build
 	@mkdir -p bin
 	@cp build/monoEngine bin
 
+gcc:
+
 build/Makefile: CMakeLists.txt
 	@mkdir -p build
-	@cd build; cmake ..
+	@cd build; cmake -D CMAKE_CXX_COMPILER=$(COMPILER) ..
 
 clean:
 	rm -rf build/* bin/*
