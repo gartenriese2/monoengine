@@ -1,5 +1,8 @@
 #include <cstdlib>
 
+void demo1();
+void demo2();
+
 #include "demo.hpp"
 void demo1() {
 	Demo demo({1920, 1080});
