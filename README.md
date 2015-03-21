@@ -1,6 +1,10 @@
 # monoEngine
 single threaded opengl engine
 
+## Building ##
+
+If you want to use GCC instead of Clang, use `make COMPILER=g++`. Otherwise, Clang++ will be used.
+
 ## Dependencies ##
 
 ### Linux ###
