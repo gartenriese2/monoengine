@@ -8,8 +8,6 @@ all: build/Makefile
 	@mkdir -p bin
 	@cp build/monoEngine bin
 
-gcc:
-
 build/Makefile: CMakeLists.txt
 	@mkdir -p build
 	@cd build; cmake -D CMAKE_CXX_COMPILER=$(COMPILER) ..
