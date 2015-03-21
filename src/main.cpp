@@ -1,8 +1,5 @@
 #include <cstdlib>
 
-void demo1();
-void demo2();
-
 #include "demo.hpp"
 
 int main() {
