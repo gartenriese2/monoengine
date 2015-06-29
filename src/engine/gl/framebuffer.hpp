@@ -13,36 +13,41 @@ class Framebuffer {
 	public:
 
 		Framebuffer();
-		Framebuffer(const std::string &);
+		Framebuffer(const std::string & name);
 		Framebuffer(const Framebuffer &) = delete;
 		Framebuffer(Framebuffer &&) = default;
 		Framebuffer & operator=(const Framebuffer &) = delete;
-		Framebuffer & operator=(Framebuffer &&) = default;
+		Framebuffer & operator=(Framebuffer &&) & = default;
 		~Framebuffer() {}
 
-		operator GLuint() const { return m_obj; }
+		operator GLuint() const noexcept { return m_obj; }
 
-		void bind(GLenum = GL_FRAMEBUFFER) const;
-		void unbind(GLenum = GL_FRAMEBUFFER) const;
+		void bind(GLenum target = GL_FRAMEBUFFER) const;
+		void unbind(GLenum target = GL_FRAMEBUFFER) const;
 
-		GLint getParameter(GLenum) const;
-		void setParameter(GLenum, GLint) const;
-		GLint getAttachmentParameter(GLenum, GLenum) const;
-		const glm::ivec2 getAttachmentSize(GLenum) const;
+		GLint getParameter(GLenum pname) const;
+		void setParameter(GLenum pname, GLint param) const;
+		GLint getAttachmentParameter(GLenum attachment, GLenum pname) const;
+		const glm::ivec2 getAttachmentSize(GLenum attachment) const;
 
-		void attachTexture(GLenum, const gl::Texture &, GLint) const;
+		void attachTexture(GLenum attachment, const gl::Texture & texture, GLint level) const;
 
-		bool isComplete(GLenum) const;
+		bool isComplete(GLenum target) const;
 
-		void read(GLenum) const;
-		void draw(const std::vector<GLenum> &) const;
-		void blit(GLuint, const glm::ivec4 &, const glm::ivec4 &, GLbitfield, GLenum) const;
-		void blitAttachment(GLenum, const glm::ivec4 &) const;
+		void read(GLenum src) const;
+		void draw(const std::vector<GLenum> & buffers) const;
+		void blit(GLuint drawFramebuffer, const glm::ivec4 & src, const glm::ivec4 & dst, GLbitfield mask, GLenum filter) const;
+		void blitAttachment(GLenum src, const glm::ivec4 & dst) const;
 
 	private:
 
 		GLObject m_obj;
 
 };
+
+static_assert(std::is_nothrow_move_constructible<Framebuffer>(), "Should be noexcept MoveConstructible");
+static_assert(!std::is_copy_constructible<Framebuffer>(), "Should not be CopyConstructible");
+static_assert(std::is_nothrow_move_assignable<Framebuffer>(), "Should be noexcept MoveAssignable");
+static_assert(!std::is_copy_assignable<Framebuffer>(), "Should not be CopyAssignable");
 
 } // namespace gl

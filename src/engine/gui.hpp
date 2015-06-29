@@ -14,7 +14,11 @@ class Gui {
 
 	public:
 
-		Gui(std::unique_ptr<Window> &, std::unique_ptr<core::Input> &);
+		Gui(std::unique_ptr<Window> & window, std::unique_ptr<core::Input> & input);
+		Gui(const Gui &) = delete;
+		Gui(Gui &&) = delete;
+		Gui & operator=(const Gui &) = delete;
+		Gui & operator=(Gui &&) = delete;
 		~Gui();
 
 		void newFrame();
@@ -48,5 +52,10 @@ class Gui {
 		bool m_frameInitialized;
 
 };
+
+static_assert(!std::is_move_constructible<Gui>(), "Should not be MoveConstructible");
+static_assert(!std::is_copy_constructible<Gui>(), "Should not be CopyConstructible");
+static_assert(!std::is_move_assignable<Gui>(), "Should not be MoveAssignable");
+static_assert(!std::is_copy_assignable<Gui>(), "Should not be CopyAssignable");
 
 } // namespace engine

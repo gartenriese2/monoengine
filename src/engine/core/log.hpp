@@ -92,15 +92,20 @@ class Log {
 
 	private:
 
-		Log() {}
+		Log() noexcept {}
 		Log(const Log &) = delete;
 		Log(Log &&) = delete;
 		Log & operator=(const Log &) = delete;
 		Log & operator=(Log &&) = delete;
 		virtual ~Log() {}
 
-		Log & instance();
+		auto & instance() noexcept;
 
 };
+
+static_assert(!std::is_move_constructible<Log>(), "Should not be MoveConstructible");
+static_assert(!std::is_copy_constructible<Log>(), "Should not be CopyConstructible");
+static_assert(!std::is_move_assignable<Log>(), "Should not be MoveAssignable");
+static_assert(!std::is_copy_assignable<Log>(), "Should not be CopyAssignable");
 
 } // namespace core

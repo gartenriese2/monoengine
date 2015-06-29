@@ -33,7 +33,7 @@ void Timer::start() const {
 
 GLuint64 Timer::stop() const {
 	glEndQuery(GL_TIME_ELAPSED);
-	GLuint64 t;
+	auto t {static_cast<GLuint64>(0)};
 	glGetQueryObjectui64v(m_swapped ? m_back : m_back, GL_QUERY_RESULT, &t);
 	m_swapped = !m_swapped;
 	return t;

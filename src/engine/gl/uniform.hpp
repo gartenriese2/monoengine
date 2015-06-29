@@ -240,10 +240,15 @@ class Uniform {
 	private:
 
 		friend class Program;
-		explicit Uniform(GLint loc) : m_loc{loc} {}
+		explicit constexpr Uniform(GLint loc) noexcept : m_loc{loc} {}
 
 		GLint m_loc;
 
 };
+
+static_assert(std::is_nothrow_move_constructible<Uniform>(), "Should be noexcept MoveConstructible");
+static_assert(std::is_nothrow_copy_constructible<Uniform>(), "Should be noexcept CopyConstructible");
+static_assert(std::is_nothrow_move_assignable<Uniform>(), "Should be noexcept MoveAssignable");
+static_assert(std::is_nothrow_copy_assignable<Uniform>(), "Should be noexcept CopyAssignable");
 
 } // namespace gl

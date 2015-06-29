@@ -1,7 +1,7 @@
 .PHONY: all clean distclean
 
 
-COMPILER ?= "clang++"
+COMPILER ?= "g++"
 
 all: build/Makefile
 	@make -j -C build

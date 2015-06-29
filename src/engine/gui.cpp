@@ -14,8 +14,8 @@
 
 namespace {
 
-constexpr auto k_fontTexUnit = 0;
-static auto s_maxVBOSize = 20000u;
+constexpr auto k_fontTexUnit {0};
+static auto s_maxVBOSize {20000u};
 
 struct {
 	std::unique_ptr<gl::Texture> fontTex;
@@ -44,50 +44,50 @@ void renderDrawLists(ImDrawList ** const cmd_lists, const int cmd_lists_count) {
 	GuiData.fontTex->bindToTextureUnit(k_fontTexUnit);
 
 	// Setup orthogonal projection matrix
-	const auto width = ImGui::GetIO().DisplaySize.x;
-	const auto height = ImGui::GetIO().DisplaySize.y;
-	const auto ortho_projection = glm::mat4{
+	const auto width {ImGui::GetIO().DisplaySize.x};
+	const auto height {ImGui::GetIO().DisplaySize.y};
+	const auto ortho_projection {glm::mat4{
 		{ 2.0f/width, 0.0f, 0.0f, 0.0f },
 		{ 0.0f, 2.0f/-height, 0.0f, 0.0f },
 		{ 0.0f, 0.0f, -1.0f, 0.0f },
 		{ -1.0f, 1.0f, 0.0f, 1.0f },
-	};
-	const auto loc = glGetUniformLocation(GuiData.prog, "ProjMtx");
+	}};
+	const auto loc {glGetUniformLocation(GuiData.prog, "ProjMtx")};
 	glProgramUniformMatrix4fv(GuiData.prog, loc, 1, GL_FALSE, glm::value_ptr(ortho_projection));
 
 	// Grow our buffer according to what we need
-	size_t total_vtx_count = 0;
+	auto total_vtx_count {static_cast<size_t>(0)};
 	for (auto n = 0; n < cmd_lists_count; ++n) {
 		total_vtx_count += cmd_lists[n]->vtx_buffer.size();
 	}
-	auto neededBufferSize = total_vtx_count * sizeof(ImDrawVert);
+	auto neededBufferSize {total_vtx_count * sizeof(ImDrawVert)};
 	if (neededBufferSize > s_maxVBOSize) {
 		s_maxVBOSize = static_cast<unsigned int>(neededBufferSize) + 5000; // Grow buffer
 		GuiData.vbo->createMutableStorage(s_maxVBOSize, GL_STREAM_DRAW);
 	}
 
 	// Copy and convert all vertices into a single contiguous buffer
-	unsigned char * buffer_data = static_cast<unsigned char *>(GuiData.vbo->map(0, GuiData.vbo->getSize(), GL_MAP_WRITE_BIT));
+	auto * buffer_data = static_cast<unsigned char *>(GuiData.vbo->map(0, GuiData.vbo->getSize(), GL_MAP_WRITE_BIT));
 	if (!buffer_data) {
 		return;
 	}
-	for (int n = 0; n < cmd_lists_count; n++) {
-		const ImDrawList* cmd_list = cmd_lists[n];
+	for (auto n {0}; n < cmd_lists_count; n++) {
+		const auto * cmd_list = cmd_lists[n];
 		std::memcpy(buffer_data, &cmd_list->vtx_buffer[0], cmd_list->vtx_buffer.size() * sizeof(ImDrawVert));
 		buffer_data += cmd_list->vtx_buffer.size() * sizeof(ImDrawVert);
 	}
 	GuiData.vbo->unmap();
 
 	GuiData.vao->bind();
-	int cmd_offset = 0;
-	for (int n = 0; n < cmd_lists_count; n++) {
-		const ImDrawList* cmd_list = cmd_lists[n];
-		int vtx_offset = cmd_offset;
-		for (const auto& pcmd : cmd_list->commands) {
-			glScissor((int)pcmd.clip_rect.x,
-					  (int)(height - pcmd.clip_rect.w),
-					  (int)(pcmd.clip_rect.z - pcmd.clip_rect.x),
-					  (int)(pcmd.clip_rect.w - pcmd.clip_rect.y));
+	auto cmd_offset {0};
+	for (auto n {0}; n < cmd_lists_count; n++) {
+		const auto * cmd_list = cmd_lists[n];
+		auto vtx_offset = cmd_offset;
+		for (const auto & pcmd : cmd_list->commands) {
+			glScissor(static_cast<int>(pcmd.clip_rect.x),
+					  static_cast<int>(height - pcmd.clip_rect.w),
+					  static_cast<int>(pcmd.clip_rect.z - pcmd.clip_rect.x),
+					  static_cast<int>(pcmd.clip_rect.w - pcmd.clip_rect.y));
 			glDrawArrays(GL_TRIANGLES, vtx_offset, static_cast<GLsizei>(pcmd.vtx_count));
 			vtx_offset += pcmd.vtx_count;
 		}
@@ -117,8 +117,8 @@ Gui::Gui(std::unique_ptr<Window> & window, std::unique_ptr<core::Input> & input)
 	m_frameInitialized{false}
 {
 
-	auto & io = ImGui::GetIO();
-	const auto size = m_window->getFrameBufferSize();
+	auto & io {ImGui::GetIO()};
+	const auto size {m_window->getFrameBufferSize()};
 	io.DisplaySize.x = static_cast<float>(size.x);
 	io.DisplaySize.y = static_cast<float>(size.y);
 	io.RenderDrawListsFn = renderDrawLists;
@@ -187,7 +187,7 @@ Gui::~Gui() {
 
 void Gui::initFontTexture() {
 
-	ImGuiIO& io = ImGui::GetIO();
+	auto & io {ImGui::GetIO()};
 
 	unsigned char* pixels;
 	int width, height;
@@ -224,7 +224,7 @@ void Gui::initVAO() {
 void Gui::initProgram() {
 	GuiData.prog = glCreateProgram();
 	{
-		const std::string str = " \
+		const auto str {std::string(" \
 		#version 450 core\n \
 		layout(location = 0) in vec2 Position;\n \
 		layout(location = 1) in vec2 UV;\n \
@@ -236,13 +236,13 @@ void Gui::initProgram() {
 		   Frag_UV = UV;\n \
 		   Frag_Color = Color;\n \
 		   gl_Position = ProjMtx * vec4(Position.xy, 0.0, 1.0);\n \
-		}";
-		const auto charcode = str.c_str();
-		const auto len = static_cast<GLint>(str.size());
-		auto handle = glCreateShader(GL_VERTEX_SHADER);
+		}")};
+		const auto charcode {str.c_str()};
+		const auto len {static_cast<GLint>(str.size())};
+		auto handle {glCreateShader(GL_VERTEX_SHADER)};
 		glShaderSource(handle, 1, &charcode, &len);
 		glCompileShader(handle);
-		auto success = GL_FALSE;
+		auto success {GL_FALSE};
 		glGetShaderiv(handle, GL_COMPILE_STATUS, &success);
 		if (!success) {
 			LOG_ERROR("Could not compile Gui vertex shader");
@@ -250,7 +250,7 @@ void Gui::initProgram() {
 		glAttachShader(GuiData.prog, handle);
 	}
 	{
-		const std::string str = " \
+		const auto str {std::string(" \
 		#version 450 core\n \
 		layout(location = 0) out vec4 outColor;\n \
 		in vec2 Frag_UV;\n \
@@ -258,13 +258,13 @@ void Gui::initProgram() {
 		uniform sampler2D Texture;\n \
 		void main() {\n \
 		   outColor = Frag_Color * texture(Texture, Frag_UV.st);\n \
-		}";
-		const auto charcode = str.c_str();
-		const auto len = static_cast<GLint>(str.size());
-		auto handle = glCreateShader(GL_FRAGMENT_SHADER);
+		}")};
+		const auto charcode {str.c_str()};
+		const auto len {static_cast<GLint>(str.size())};
+		auto handle {glCreateShader(GL_FRAGMENT_SHADER)};
 		glShaderSource(handle, 1, &charcode, &len);
 		glCompileShader(handle);
-		auto success = GL_FALSE;
+		auto success {GL_FALSE};
 		glGetShaderiv(handle, GL_COMPILE_STATUS, &success);
 		if (!success) {
 			LOG_ERROR("Could not compile Gui fragment shader");
@@ -272,12 +272,12 @@ void Gui::initProgram() {
 		glAttachShader(GuiData.prog, handle);
 	}
 	glLinkProgram(GuiData.prog);
-	GLint success = GL_FALSE;
+	auto success {GL_FALSE};
 	glGetProgramiv(GuiData.prog, GL_LINK_STATUS, &success);
 	if (!success) {
 		LOG_ERROR("Could not link Gui program");
 	}
-	const auto loc = glGetUniformLocation(GuiData.prog, "Texture");
+	const auto loc {glGetUniformLocation(GuiData.prog, "Texture")};
 	glProgramUniform1i(GuiData.prog, loc, k_fontTexUnit);
 }
 
@@ -290,9 +290,9 @@ void Gui::newFrame() {
 
 void Gui::update() {
 
-	auto & io = ImGui::GetIO();
+	auto & io {ImGui::GetIO()};
 
-	const auto size = m_window->getFrameBufferSize();
+	const auto size {m_window->getFrameBufferSize()};
 	io.DisplaySize.x = static_cast<float>(size.x);
 	io.DisplaySize.y = static_cast<float>(size.y);
 

@@ -9,10 +9,29 @@ Input::Input(GLFWwindow * const window)
   : m_window{window}
 {
 
+	setCallbacks();
+
+}
+
+Input::Input(const Input & other) noexcept
+ :  m_window{other.m_window},
+	m_keyFuncs{other.m_keyFuncs},
+	m_charFuncs{other.m_charFuncs},
+	m_mouseCursorFuncs{other.m_mouseCursorFuncs},
+	m_mouseButtonFuncs{other.m_mouseButtonFuncs},
+	m_mouseScrollFuncs{other.m_mouseScrollFuncs}
+{
+
+	setCallbacks();
+
+}
+
+void Input::setCallbacks() const {
+
 	glfwSetKeyCallback(m_window, [](GLFWwindow * windowPtr, int key, int scancode, int action, int mods){
 
-		auto * const win = static_cast<engine::Engine *>(glfwGetWindowUserPointer(windowPtr));
-		auto & inputPtr = win->getInputPtr();
+		auto * const win {static_cast<engine::Engine *>(glfwGetWindowUserPointer(windowPtr))};
+		auto & inputPtr {win->getInputPtr()};
 
 		for (const auto & func : inputPtr->m_keyFuncs) {
 			func(key, scancode, action, mods);
@@ -22,8 +41,8 @@ Input::Input(GLFWwindow * const window)
 
 	glfwSetCharCallback(m_window, [](GLFWwindow * windowPtr, unsigned int codepoint){
 
-		auto * const win = static_cast<engine::Engine *>(glfwGetWindowUserPointer(windowPtr));
-		auto & inputPtr = win->getInputPtr();
+		auto * const win {static_cast<engine::Engine *>(glfwGetWindowUserPointer(windowPtr))};
+		auto & inputPtr {win->getInputPtr()};
 
 		for (const auto & func : inputPtr->m_charFuncs) {
 			func(codepoint);
@@ -33,8 +52,8 @@ Input::Input(GLFWwindow * const window)
 
 	glfwSetCursorPosCallback(m_window, [](GLFWwindow * windowPtr, double xpos, double ypos){
 
-		auto * const win = static_cast<engine::Engine *>(glfwGetWindowUserPointer(windowPtr));
-		auto & inputPtr = win->getInputPtr();
+		auto * const win {static_cast<engine::Engine *>(glfwGetWindowUserPointer(windowPtr))};
+		auto & inputPtr {win->getInputPtr()};
 
 		for (const auto & func : inputPtr->m_mouseCursorFuncs) {
 			func(xpos, ypos);
@@ -44,8 +63,8 @@ Input::Input(GLFWwindow * const window)
 
 	glfwSetMouseButtonCallback(m_window, [](GLFWwindow * windowPtr, int button, int action, int mods){
 
-		auto * const win = static_cast<engine::Engine *>(glfwGetWindowUserPointer(windowPtr));
-		auto & inputPtr = win->getInputPtr();
+		auto * const win {static_cast<engine::Engine *>(glfwGetWindowUserPointer(windowPtr))};
+		auto & inputPtr {win->getInputPtr()};
 
 		for (const auto & func : inputPtr->m_mouseButtonFuncs) {
 			func(button, action, mods);
@@ -53,10 +72,10 @@ Input::Input(GLFWwindow * const window)
 
 	});
 
-	glfwSetScrollCallback(window, [](GLFWwindow * windowPtr, double xoffset, double yoffset){
+	glfwSetScrollCallback(m_window, [](GLFWwindow * windowPtr, double xoffset, double yoffset){
 
-		auto * const win = static_cast<engine::Engine *>(glfwGetWindowUserPointer(windowPtr));
-		auto & inputPtr = win->getInputPtr();
+		auto * const win {static_cast<engine::Engine *>(glfwGetWindowUserPointer(windowPtr))};
+		auto & inputPtr {win->getInputPtr()};
 
 		for (const auto & func : inputPtr->m_mouseScrollFuncs) {
 			func(xoffset, yoffset);

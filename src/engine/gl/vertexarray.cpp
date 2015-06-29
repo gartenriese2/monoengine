@@ -33,7 +33,7 @@ void VertexArray::unbind() const {
 
 bool VertexArray::attribBindingEnabled(const unsigned int attribIndex) const {
 	bind();
-	GLint ret;
+	auto ret {0};
 	glGetVertexAttribiv(attribIndex, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &ret);
 	return static_cast<bool>(ret);
 }

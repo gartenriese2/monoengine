@@ -47,13 +47,13 @@ GLint Framebuffer::getAttachmentParameter(const GLenum attachment, const GLenum 
 }
 
 const glm::ivec2 Framebuffer::getAttachmentSize(const GLenum attachment) const {
-	const auto type = getAttachmentParameter(attachment, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE);
+	const auto type {getAttachmentParameter(attachment, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE)};
 	if (type != GL_TEXTURE) {
 		LOG_WARNING("Framebuffer attachment is not a texture, can't read size!");
 		return {-1, -1};
 	}
-	const auto name = getAttachmentParameter(attachment, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME);
-	const auto level = getAttachmentParameter(attachment, GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL);
+	const auto name {getAttachmentParameter(attachment, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME)};
+	const auto level {getAttachmentParameter(attachment, GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL)};
 	GLint width, height;
 	glGetTextureLevelParameteriv(static_cast<GLuint>(name), level, GL_TEXTURE_WIDTH, &width);
 	glGetTextureLevelParameteriv(static_cast<GLuint>(name), level, GL_TEXTURE_HEIGHT, &height);
@@ -66,7 +66,7 @@ void Framebuffer::attachTexture(const GLenum attachment, const gl::Texture & tex
 }
 
 bool Framebuffer::isComplete(const GLenum target) const {
-	const auto e = glCheckNamedFramebufferStatus(m_obj, target);
+	const auto e {glCheckNamedFramebufferStatus(m_obj, target)};
 	if (e == GL_FRAMEBUFFER_COMPLETE) {
 		return true;
 	} else {
@@ -107,7 +107,7 @@ void Framebuffer::blit(const GLuint drawFramebuffer, const glm::ivec4 & src, con
 
 void Framebuffer::blitAttachment(const GLenum src, const glm::ivec4 & dst) const {
 	read(src);
-	const auto size = getAttachmentSize(src);
+	const auto size {getAttachmentSize(src)};
 	blit(0, {0, 0, size.x, size.y}, dst, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 }
 

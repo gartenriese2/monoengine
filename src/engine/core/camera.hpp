@@ -11,23 +11,23 @@ class Camera {
 	public:
 
 		Camera();
-		Camera(const glm::vec3 &, const glm::vec3 &, const glm::vec3 &,
-				float, float, float, float = std::numeric_limits<float>::infinity());
+		Camera(const glm::vec3 & pos, const glm::vec3 & dir, const glm::vec3 & up,
+				float fov, float ratio, float near, float far = std::numeric_limits<float>::infinity());
 
 		const glm::mat4 & getViewMatrix() const;
 		const glm::mat4 & getProjMatrix() const;
 
-		void setFov(float);
-		void setRatio(float);
-		void setNear(float);
-		void setFar(float);
+		void setFov(float val) noexcept;
+		void setRatio(float val) noexcept;
+		void setNear(float val) noexcept;
+		void setFar(float val) noexcept;
 
-		void roll(float); // rotate around z-axis
-		void pitch(float); // rotate around x-axis
-		void yaw(float); // rotate around y-axis
-		void rotate(float, const glm::vec3 &);
-		void translate(const glm::vec3 &);
-		void translateLocal(const glm::vec3 &);
+		void roll(float angle); // rotate around z-axis
+		void pitch(float angle); // rotate around x-axis
+		void yaw(float angle); // rotate around y-axis
+		void rotate(float angle, const glm::vec3 & axis);
+		void translate(const glm::vec3 & v);
+		void translateLocal(const glm::vec3 & v);
 
 	private:
 
@@ -48,5 +48,10 @@ class Camera {
 		mutable bool m_modifiedProj;
 
 };
+
+static_assert(std::is_nothrow_move_constructible<Camera>(), "Should be noexcept MoveConstructible");
+static_assert(std::is_nothrow_copy_constructible<Camera>(), "Should be noexcept CopyConstructible");
+static_assert(std::is_nothrow_move_assignable<Camera>(), "Should be noexcept MoveAssignable");
+static_assert(std::is_nothrow_copy_assignable<Camera>(), "Should be noexcept CopyAssignable");
 
 } // namespace core

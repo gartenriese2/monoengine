@@ -14,15 +14,19 @@ class Window {
 	public:
 
 		Window() : m_win{nullptr} {}
-		Window(const glm::uvec2 &, const std::string &);
+		Window(const glm::uvec2 & size, const std::string & name);
+		Window(const Window &) = delete;
+		Window(Window && other) = delete;
+		Window & operator=(const Window &) = delete;
+		Window & operator=(Window && other) = delete;
 		~Window();
 
-		GLFWwindow * getGLFWWindow() { return m_win; }
-		const glm::uvec2 getScreenCoordSize() const { return m_screenCoordSize; }
-		const glm::uvec2 getFrameBufferSize() const { return m_frameBufferSize; }
+		auto * getGLFWWindow() noexcept { return m_win; }
+		const auto getScreenCoordSize() const noexcept { return m_screenCoordSize; }
+		const auto getFrameBufferSize() const noexcept { return m_frameBufferSize; }
 
-		void addWindowSizeFunc(const std::function<void(int, int)> &);
-		void addFrameBufferSizeFunc(const std::function<void(int, int)> &);
+		void addWindowSizeFunc(const std::function<void(int, int)> & func);
+		void addFrameBufferSizeFunc(const std::function<void(int, int)> & func);
 
 		bool render();
 
@@ -37,5 +41,10 @@ class Window {
 		std::vector<std::function<void(int, int)>> m_frameBufferSizeFuncs;
 
 };
+
+static_assert(!std::is_move_constructible<Window>(), "Should not be MoveConstructible");
+static_assert(!std::is_copy_constructible<Window>(), "Should not be CopyConstructible");
+static_assert(!std::is_move_assignable<Window>(), "Should not be MoveAssignable");
+static_assert(!std::is_copy_assignable<Window>(), "Should not be CopyAssignable");
 
 } // namespace engine

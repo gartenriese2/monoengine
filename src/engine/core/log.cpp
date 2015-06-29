@@ -4,16 +4,16 @@
 
 namespace core {
 
-Log * Log::s_instance = nullptr;
+Log * Log::s_instance {nullptr};
 
-Log & Log::instance() {
+auto & Log::instance() noexcept {
 
 	static Cleanup cleanup;
 	if (s_instance == nullptr) {
 		s_instance = new Log();
 	}
 
-	return * s_instance;
+	return *s_instance;
 
 }
 
@@ -26,7 +26,7 @@ Log::Cleanup::~Cleanup() {
 
 void Log::logGL() {
 
-	auto err = glGetError();
+	auto err {glGetError()};
 	switch(err) {
 		case GL_NO_ERROR:
 			log("GL_NO_ERROR");

@@ -56,6 +56,20 @@ GLObject::GLObject(const GLenum type)
 
 }
 
+GLObject::GLObject(GLObject && other) noexcept
+  : m_handle{std::move(other.m_handle)},
+	m_deleter{std::move(other.m_deleter)}
+{
+	other.m_handle = 0;
+	other.m_deleter = [](GLuint &){};
+}
+
+GLObject & GLObject::operator=(GLObject && other) & noexcept {
+	std::swap(m_handle, other.m_handle);
+	std::swap(m_deleter, other.m_deleter);
+	return *this;
+}
+
 GLObject::~GLObject() {
 	if (m_deleter) {
 		m_deleter(m_handle);

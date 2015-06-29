@@ -15,9 +15,10 @@ Camera::Camera()
 	m_ratio{1.f},
 	m_near{0.01f},
 	m_far{std::numeric_limits<float>::infinity()},
+	m_projMat{glm::infinitePerspective(m_fov, m_ratio, m_near)},
 	m_modified{true}
 {
-	m_projMat = glm::infinitePerspective(m_fov, m_ratio, m_near);
+
 }
 
 Camera::Camera(const glm::vec3 & pos, const glm::vec3 & dir, const glm::vec3 & up,
@@ -46,15 +47,15 @@ const glm::mat4 & Camera::getViewMatrix() const {
 
 	if (m_modified) {
 		// Compute inverse rotation q
-		auto q = m_orientation;
+		auto q {m_orientation};
 		q.x *= -1.0f;
 		q.y *= -1.0f;
 		q.z *= -1.0f;
 		m_viewMat = glm::mat4_cast(q);
 
 		// Translate by inverse eyePosition.
-		const auto v = -m_pos;
-		const auto m = m_viewMat;
+		const auto v {-m_pos};
+		const auto m {m_viewMat};
 		m_viewMat[3] = (m[0] * v[0]) + (m[1] * v[1]) + (m[2] * v[2]) + m[3];
 
 		m_modified = false;
@@ -80,22 +81,22 @@ const glm::mat4 & Camera::getProjMatrix() const {
 
 }
 
-void Camera::setFov(const float val) {
+void Camera::setFov(const float val) noexcept {
 	m_fov = val;
 	m_modifiedProj = true;
 }
 
-void Camera::setRatio(const float val) {
+void Camera::setRatio(const float val) noexcept {
 	m_ratio = val;
 	m_modifiedProj = true;
 }
 
-void Camera::setNear(const float val) {
+void Camera::setNear(const float val) noexcept {
 	m_near = val;
 	m_modifiedProj = true;
 }
 
-void Camera::setFar(const float val) {
+void Camera::setFar(const float val) noexcept {
 	m_far = val;
 	m_modifiedProj = true;
 }
@@ -106,7 +107,7 @@ void Camera::roll(const float angle) {
 		return;
 	}
 
-	const glm::quat q = glm::angleAxis(angle, m_dir);
+	const auto q {glm::angleAxis(angle, m_dir)};
 
 	m_up = glm::normalize(glm::rotate(q, m_up));
 
@@ -122,7 +123,7 @@ void Camera::pitch(const float angle) {
 		return;
 	}
 
-	const glm::quat q = glm::angleAxis(angle, glm::cross(m_dir, m_up));
+	const auto q {glm::angleAxis(angle, glm::cross(m_dir, m_up))};
 
 	m_up = glm::normalize(glm::rotate(q, m_up));
 	m_dir = glm::normalize(glm::rotate(q, m_dir));
@@ -139,7 +140,7 @@ void Camera::yaw(const float angle) {
 		return;
 	}
 
-	const glm::quat q = glm::angleAxis(angle, m_up);
+	const auto q {glm::angleAxis(angle, m_up)};
 
 	m_dir = glm::normalize(glm::rotate(q, m_dir));
 
@@ -157,8 +158,8 @@ void Camera::rotate(const float angle, const glm::vec3 & axis) {
 
 	LOG_ASSERT(std::abs(axis.length()) > 0.f, "rotation axis > 0.f");
 
-	const auto n = glm::normalize(axis);
-	const auto q = glm::angleAxis(angle, n);
+	const auto n {glm::normalize(axis)};
+	const auto q {glm::angleAxis(angle, n)};
 
 	m_dir = glm::normalize(glm::rotate(q, m_dir));
 	m_up = glm::normalize(glm::rotate(q, m_up));

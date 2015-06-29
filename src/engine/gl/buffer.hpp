@@ -9,23 +9,23 @@ class Buffer {
 	public:
 
 		Buffer();
-		Buffer(const std::string &);
+		Buffer(const std::string & name);
 		Buffer(const Buffer &) = delete;
 		Buffer(Buffer &&) = default;
 		Buffer & operator=(const Buffer &) = delete;
-		Buffer & operator=(Buffer &&) = default;
+		Buffer & operator=(Buffer &&) & = default;
 		~Buffer() {}
 
 		operator GLuint() const { return m_obj; }
 
-		unsigned int getSize() const;
+		GLint getSize() const;
 
-		void createImmutableStorage(unsigned int, GLbitfield, const void * = nullptr);
-		void createMutableStorage(unsigned int, GLbitfield, const void * = nullptr);
-		void setData(unsigned int, unsigned int, const void *);
+		void createImmutableStorage(unsigned int size, GLbitfield flags, const void * data = nullptr);
+		void createMutableStorage(unsigned int size, GLbitfield usage, const void * data = nullptr);
+		void setData(unsigned int offset, unsigned int size, const void * data);
 
 		bool isMapped() const;
-		void * map(unsigned int, unsigned int, GLbitfield);
+		void * map(unsigned int offset, unsigned int size, GLbitfield access);
 		bool unmap() const;
 
 	private:
@@ -33,5 +33,10 @@ class Buffer {
 		GLObject m_obj;
 
 };
+
+static_assert(std::is_nothrow_move_constructible<Buffer>(), "Should be noexcept MoveConstructible");
+static_assert(!std::is_copy_constructible<Buffer>(), "Should not be CopyConstructible");
+static_assert(std::is_nothrow_move_assignable<Buffer>(), "Should be noexcept MoveAssignable");
+static_assert(!std::is_copy_assignable<Buffer>(), "Should not be CopyAssignable");
 
 } // namespace gl

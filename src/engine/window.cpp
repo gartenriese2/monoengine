@@ -21,8 +21,8 @@ Window::Window(const glm::uvec2 & size, const std::string & name)
 	m_frameBufferSize = {w, h};
 
 	glfwSetWindowSizeCallback(m_win, [](GLFWwindow * winPtr, int width, int height){
-		auto * const win = static_cast<engine::Engine *>(glfwGetWindowUserPointer(winPtr));
-		auto & windowPtr = win->getWindowPtr();
+		auto * const win {static_cast<engine::Engine *>(glfwGetWindowUserPointer(winPtr))};
+		auto & windowPtr {win->getWindowPtr()};
 		windowPtr->m_screenCoordSize = {width, height};
 
 		for (const auto & func : windowPtr->m_windowSizeFuncs) {
@@ -30,8 +30,8 @@ Window::Window(const glm::uvec2 & size, const std::string & name)
 		}
 	});
 	glfwSetFramebufferSizeCallback(m_win, [](GLFWwindow * winPtr, int width, int height){
-		auto * const win = static_cast<engine::Engine *>(glfwGetWindowUserPointer(winPtr));
-		auto & windowPtr = win->getWindowPtr();
+		auto * const win {static_cast<engine::Engine *>(glfwGetWindowUserPointer(winPtr))};
+		auto & windowPtr {win->getWindowPtr()};
 		windowPtr->m_frameBufferSize = {width, height};
 
 		for (const auto & func : windowPtr->m_frameBufferSizeFuncs) {

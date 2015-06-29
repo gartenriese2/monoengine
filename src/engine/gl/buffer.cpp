@@ -22,10 +22,10 @@ Buffer::Buffer(const std::string & name)
 	}
 }
 
-unsigned int Buffer::getSize() const {
+GLint Buffer::getSize() const {
 	GLint ret;
 	glGetNamedBufferParameteriv(m_obj, GL_BUFFER_SIZE, &ret);
-	return static_cast<unsigned int>(ret);
+	return ret;
 }
 
 void Buffer::createImmutableStorage(const unsigned int size, const GLbitfield flags, const void * data) {

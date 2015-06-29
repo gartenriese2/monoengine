@@ -24,6 +24,12 @@ Shader::Shader(const std::string & file, const std::string & name) {
 	glObjectLabel(GL_SHADER, m_obj, static_cast<GLsizei>(name.size()), name.c_str());
 }
 
+Shader & Shader::operator=(Shader && other) & noexcept {
+	std::swap(m_obj, other.m_obj);
+	std::swap(m_source, other.m_source);
+	return *this;
+}
+
 auto Shader::getCode(const std::string & file) const {
 
 	std::string code;
@@ -52,18 +58,18 @@ void Shader::addSourceFromFile(const std::string & file) {
 
 bool Shader::compileSource() const {
 
-	const auto charcode = m_source.c_str();
-	const auto len = static_cast<GLint>(m_source.size());
+	const auto charcode {m_source.c_str()};
+	const auto len {static_cast<GLint>(m_source.size())};
 
 	glShaderSource(m_obj, 1, &charcode, &len);
 	glCompileShader(m_obj);
 
-	auto success = GL_FALSE;
+	auto success {GL_FALSE};
 	glGetShaderiv(m_obj, GL_COMPILE_STATUS, &success);
 
 	if (!success) {
 
-		auto logSize = GLint{};
+		auto logSize {0};
 		glGetShaderiv(m_obj, GL_INFO_LOG_LENGTH, &logSize);
 
 		std::vector<char> tmp;
@@ -90,24 +96,24 @@ bool Shader::allocate(const std::string & file) {
 		return false;
 	}
 
-	const auto type = file.substr(file.size() - 4);
+	const auto type {file.substr(file.size() - 4)};
 	if (type == "vert") {
-		auto obj = GLObject(GL_VERTEX_SHADER);
+		auto obj {GLObject(GL_VERTEX_SHADER)};
 		std::swap(m_obj, obj);
 	} else if (type == "frag") {
-		auto obj = GLObject(GL_FRAGMENT_SHADER);
+		auto obj {GLObject(GL_FRAGMENT_SHADER)};
 		std::swap(m_obj, obj);
 	} else if (type == "geom") {
-		auto obj = GLObject(GL_GEOMETRY_SHADER);
+		auto obj {GLObject(GL_GEOMETRY_SHADER)};
 		std::swap(m_obj, obj);
 	} else if (type == "cont") {
-		auto obj = GLObject(GL_TESS_CONTROL_SHADER);
+		auto obj {GLObject(GL_TESS_CONTROL_SHADER)};
 		std::swap(m_obj, obj);
 	} else if (type == "eval") {
-		auto obj = GLObject(GL_TESS_EVALUATION_SHADER);
+		auto obj {GLObject(GL_TESS_EVALUATION_SHADER)};
 		std::swap(m_obj, obj);
 	} else if (type == "comp") {
-		auto obj = GLObject(GL_COMPUTE_SHADER);
+		auto obj {GLObject(GL_COMPUTE_SHADER)};
 		std::swap(m_obj, obj);
 	} else {
 		LOG("Not a valid shader file ending: " + type);
@@ -125,19 +131,19 @@ bool Shader::allocate(const std::string & file) {
 
 bool Shader::compile(const std::string & file) {
 
-	const auto code = getCode(file);
-	const auto charcode = code.c_str();
-	const auto len = static_cast<GLint>(code.size());
+	const auto code {getCode(file)};
+	const auto charcode {code.c_str()};
+	const auto len {static_cast<GLint>(code.size())};
 
 	glShaderSource(m_obj, 1, &charcode, &len);
 	glCompileShader(m_obj);
 
-	auto success = GL_FALSE;
+	auto success {GL_FALSE};
 	glGetShaderiv(m_obj, GL_COMPILE_STATUS, &success);
 
 	if (!success) {
 
-		auto logSize = GLint{};
+		auto logSize {0};
 		glGetShaderiv(m_obj, GL_INFO_LOG_LENGTH, &logSize);
 
 		std::vector<char> tmp;

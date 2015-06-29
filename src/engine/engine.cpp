@@ -7,7 +7,7 @@
 
 namespace engine {
 
-constexpr auto k_avg = 20u;
+constexpr auto k_avg {20u};
 
 Engine::Engine(const glm::uvec2 & size,	const std::string & title, const bool debugging)
   : m_start{std::chrono::system_clock::now()},
@@ -26,6 +26,18 @@ Engine::Engine(const glm::uvec2 & size,	const std::string & title, const bool de
 	m_gui = std::make_unique<Gui>(m_window, m_input);
 
 	LOG("Engine initialized!");
+
+}
+
+Engine::Engine(Engine && other) noexcept
+  : m_window{std::move(other.m_window)},
+	m_input{std::move(other.m_input)},
+	m_gui{std::move(other.m_gui)},
+	m_start{std::move(other.m_start)},
+	m_times{std::move(other.m_times)},
+	m_currentFPS{std::move(other.m_currentFPS)},
+	m_showFPS{std::move(other.m_showFPS)}
+{
 
 }
 
@@ -51,7 +63,7 @@ void Engine::initGLFW() {
 void Engine::initGL() {
 
 	glewExperimental = GL_TRUE;
-	const auto err = glewInit();
+	const auto err {glewInit()};
 	if (err != GLEW_OK) {
 		LOG_ERROR("Failed to initialize GLEW:", glewGetErrorString(err));
 	}
@@ -65,7 +77,7 @@ void debugCallback(GLenum, GLenum, GLuint, GLenum, GLsizei, const GLchar *, cons
 const std::string formatDebugOutput(GLenum source, GLenum type,
 	GLuint id, GLenum severity, const std::string & msg) {
 
-	std::string sourceStr {"UNDEFINED"};
+	auto sourceStr {"UNDEFINED"};
 	switch (source) {
 		case GL_DEBUG_SOURCE_API:
 			sourceStr = "API";
@@ -87,7 +99,7 @@ const std::string formatDebugOutput(GLenum source, GLenum type,
 			break;
 	}
 
-	std::string typeStr {"UNDEFINED"};
+	auto typeStr {"UNDEFINED"};
 	switch (type) {
 		case GL_DEBUG_TYPE_ERROR:
 			typeStr = "ERROR";
@@ -118,7 +130,7 @@ const std::string formatDebugOutput(GLenum source, GLenum type,
 			break;
 	}
 
-	std::string severityStr {"UNDEFINED"};
+	auto severityStr {"UNDEFINED"};
 	switch (severity) {
 		case GL_DEBUG_SEVERITY_HIGH:
 			severityStr = "HIGH";
@@ -142,7 +154,7 @@ const std::string formatDebugOutput(GLenum source, GLenum type,
 void debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
 					 GLsizei, const GLchar * message, const void *) {
 
-	const auto output = formatDebugOutput(source, type, id, severity, message);
+	const auto output {formatDebugOutput(source, type, id, severity, message)};
 	LOG(output);
 
 }
@@ -169,7 +181,7 @@ bool Engine::render() {
 	}
 	m_gui->render();
 	if (m_window->render()) {
-		const std::chrono::duration<double> elapsed = std::chrono::system_clock::now() - m_start;
+		const auto elapsed {static_cast<std::chrono::duration<double>>(std::chrono::system_clock::now() - m_start)};
 		m_times.emplace_back(elapsed.count() * 1000.0);
 		m_start = std::chrono::system_clock::now();
 		m_gui->update();
@@ -179,7 +191,7 @@ bool Engine::render() {
 
 }
 
-void Engine::showFPS(const bool show) {
+void Engine::showFPS(const bool show) noexcept {
 	m_showFPS = show;
 }
 
@@ -191,7 +203,7 @@ void Engine::renderFPS() {
 	}
 
 	if (m_times.size() == k_avg) {
-		auto avg = 0.0;
+		auto avg {0.0};
 		for (const auto & t : m_times) {
 			avg += t;
 		}
@@ -200,7 +212,7 @@ void Engine::renderFPS() {
 		m_times.erase(m_times.begin(), m_times.begin() + k_avg / 2);
 	}
 
-	const auto size = m_window->getFrameBufferSize();
+	const auto size {m_window->getFrameBufferSize()};
 	ImGui::SetWindowPos(ImVec2(static_cast<float>(size.x) - 110.f, 10.f));
 	ImGui::Text("fps: %d", m_currentFPS);
 	ImGui::End();
