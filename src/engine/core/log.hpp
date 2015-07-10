@@ -17,8 +17,8 @@ class Log {
 	public:
 
 		template<typename T>
-		static void logError(const T & output, const bool exiting) {
-			std::cerr << "ERROR: " << output << std::endl;
+		static void logError(T && output, const bool exiting) {
+			std::cerr << "ERROR: " << std::forward<T>(output) << std::endl;
 			if (exiting) {
 				std::cerr << "Exiting ..." << std::endl;
 				exit(EXIT_FAILURE);
@@ -26,26 +26,26 @@ class Log {
 		}
 
 		template<typename T>
-		static void logError(const T & output) {
-			logError(output, true);
+		static void logError(T && output) {
+			logError(std::forward<T>(output), true);
 		}
 
 		template <typename T, typename ... Args>
-		static void logError(const T & output, Args ... args) {
-			logError(output, false);
-			logError(args ...);
+		static void logError(T && output, Args && ... args) {
+			logError(std::forward<T>(output), false);
+			logError(std::forward<Args>(args) ...);
 		}
 
 		template<typename T>
-		static void logWarning(const T & output) {
+		static void logWarning(T && output) {
 			std::cout << "WARNING: ";
-			log(output);
+			log(std::forward<T>(output));
 		}
 
 		template <typename T, typename ... Args>
-		static void logWarning(const T & output, Args ... args) {
-			logWarning(output);
-			logWarning(args ...);
+		static void logWarning(T && output, Args && ... args) {
+			logWarning(std::forward<T>(output));
+			logWarning(std::forward<Args>(args) ...);
 		}
 
 		template<typename T>
