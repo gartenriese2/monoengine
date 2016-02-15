@@ -67,7 +67,7 @@ void renderDrawLists(ImDrawList ** const cmd_lists, const int cmd_lists_count) {
 	}
 
 	// Copy and convert all vertices into a single contiguous buffer
-	auto * buffer_data = static_cast<unsigned char *>(GuiData.vbo->map(0, GuiData.vbo->getSize(), GL_MAP_WRITE_BIT));
+	auto * buffer_data = static_cast<unsigned char *>(GuiData.vbo->map(0, static_cast<unsigned int>(GuiData.vbo->getSize()), GL_MAP_WRITE_BIT));
 	if (!buffer_data) {
 		return;
 	}

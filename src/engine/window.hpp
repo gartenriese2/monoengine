@@ -22,8 +22,8 @@ class Window {
 		~Window();
 
 		auto * getGLFWWindow() noexcept { return m_win; }
-		const auto getScreenCoordSize() const noexcept { return m_screenCoordSize; }
-		const auto getFrameBufferSize() const noexcept { return m_frameBufferSize; }
+		auto getScreenCoordSize() const noexcept { return m_screenCoordSize; }
+		auto getFrameBufferSize() const noexcept { return m_frameBufferSize; }
 
 		void addWindowSizeFunc(const std::function<void(int, int)> & func);
 		void addFrameBufferSizeFunc(const std::function<void(int, int)> & func);
